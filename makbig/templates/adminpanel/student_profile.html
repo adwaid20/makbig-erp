@@ -1,0 +1,87 @@
+{% extends "layouts/student_layout.html" %}
+
+{% block title %}My Profile | Makbig{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <!-- Decorative Header Gradient -->
+            <div class="card-header border-0 p-0" style="height: 120px; background: var(--gradient-student);"></div>
+
+            <div class="card-body text-center p-4 p-md-5 mt-n5 position-relative">
+                <!-- Avatar -->
+                <div class="avatar-wrapper mb-4 position-relative d-inline-block">
+                    <div class="rounded-circle p-1 bg-white shadow-sm mx-auto" style="width: 130px; height: 130px;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold display-4"
+                            style="width: 100%; height: 100%; background: var(--gradient-student);">
+                            {{ request.user.first_name|slice:":1"|upper }}
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="fw-bold text-dark mb-1">{{ request.user.get_full_name }}</h3>
+                <p class="text-muted mb-4">{{ request.user.email }}</p>
+
+                <!-- Details List -->
+                <div class="d-flex flex-column gap-3 text-start bg-light rounded-4 p-4 border border-light">
+
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box rounded-circle bg-white shadow-sm text-primary me-3 d-flex align-items-center justify-content-center"
+                            style="width: 40px; height: 40px;">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                        <div>
+                            <div class="small text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Role</div>
+                            <div class="fw-medium text-dark">Student</div>
+                        </div>
+                    </div>
+
+                    {% if student.course %}
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box rounded-circle bg-white shadow-sm text-primary me-3 d-flex align-items-center justify-content-center"
+                            style="width: 40px; height: 40px;">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+                        <div>
+                            <div class="small text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Course</div>
+                            <div class="fw-medium text-dark">{{ student.course.name }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box rounded-circle bg-white shadow-sm text-primary me-3 d-flex align-items-center justify-content-center"
+                            style="width: 40px; height: 40px;">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div>
+                            <div class="small text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Email</div>
+                            <div class="fw-medium text-dark">{{ request.user.email }}</div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .mt-n5 {
+        margin-top: -5rem;
+    }
+
+    .icon-box i {
+        font-size: 1.1rem;
+        color: #4338ca;
+        /* Matches theme dark purple */
+    }
+</style>
+
+{% endblock %}

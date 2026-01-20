@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Login | Makbig</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+
+<div class="page-wrapper">
+    <div class="login-card">
+        <h1 class="brand">Makbig</h1>
+        <p class="subtitle">Staff Portal Login</p>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                {{ form.email.label_tag }}
+                {{ form.email }}
+            </div>
+
+            <div class="form-group">
+                {{ form.password.label_tag }}
+                {{ form.password }}
+            </div>
+
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+
+        {% for message in messages %}
+            <p class="error">{{ message }}</p>
+        {% endfor %}
+    </div>
+</div>
+
+</body>
+</html>

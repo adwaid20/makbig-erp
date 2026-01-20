@@ -1,0 +1,171 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Student | Makbig Admin</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 500px;
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .auth-header {
+            background: #fff;
+            padding: 30px 30px 10px;
+            text-align: center;
+        }
+
+        .auth-body {
+            padding: 20px 30px 40px;
+        }
+
+        /* --- Styling the Raw Django Form --- */
+        .django-raw-form p {
+            margin-bottom: 1.25rem;
+        }
+
+        /* Form Labels */
+        .django-raw-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #344767;
+            font-size: 0.875rem;
+        }
+
+        /* Form Inputs */
+        .django-raw-form input[type="text"],
+        .django-raw-form input[type="email"],
+        .django-raw-form input[type="password"],
+        .django-raw-form select,
+        .django-raw-form textarea {
+            display: block;
+            width: 100%;
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #d2d6da;
+            border-radius: 0.5rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .django-raw-form input:focus,
+        .django-raw-form select:focus,
+        .django-raw-form textarea:focus {
+            border-color: #8bbafe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* Submit Button */
+        .btn-auth {
+            padding: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+
+        .btn-auth:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.3);
+        }
+
+        /* Help texts */
+        .helptext {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="auth-card">
+
+        <!-- Header -->
+        <div class="auth-header">
+            <div class="mb-3 d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle"
+                style="width: 60px; height: 60px;">
+                <i class="fa-solid fa-user-plus fs-3"></i>
+            </div>
+            <h4 class="fw-bold text-dark mb-1">Add New Student</h4>
+            <p class="text-muted small mb-0">Enter student details to create an account.</p>
+        </div>
+
+        <div class="auth-body">
+
+            <!-- Messages -->
+            {% if messages %}
+            {% for message in messages %}
+            <div
+                class="alert alert-{{ message.tags|default:'info' }} border-0 shadow-sm rounded-3 d-flex align-items-center gap-2 mb-4 p-3">
+                {% if 'success' in message.tags %}
+                <i class="fa-solid fa-circle-check text-success"></i>
+                {% elif 'error' in message.tags %}
+                <i class="fa-solid fa-circle-exclamation text-danger"></i>
+                {% else %}
+                <i class="fa-solid fa-circle-info text-primary"></i>
+                {% endif %}
+                <div class="small fw-medium">{{ message }}</div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <!-- Raw Form Container -->
+                <div class="django-raw-form">
+                    {{ form.as_p }}
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary btn-auth">
+                        Add Student
+                    </button>
+                    <a href="{% url 'staff_students' %}"
+                        class="btn btn-link text-decoration-none text-muted btn-sm mt-3">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Back to Users
+                    </a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

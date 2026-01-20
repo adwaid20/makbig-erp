@@ -1,0 +1,203 @@
+{% extends "layouts/student_layout.html" %}
+{% load static %}
+
+{% block title %}My Reviews | Makbig{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="mb-4">
+    <h4 class="fw-bold text-dark">My Reviews</h4>
+    <p class="text-muted small">Track your upcoming sessions and review history.</p>
+</div>
+
+{% if total_fine > 0 %}
+<div class="alert alert-warning border-0 shadow-sm d-flex align-items-center gap-3 rounded-3 mb-4">
+    <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center p-3"
+        style="width: 48px; height: 48px;">
+        <i class="fa-solid fa-triangle-exclamation fs-5"></i>
+    </div>
+    <div>
+        <h6 class="fw-bold mb-1 text-dark">Outstanding Fine</h6>
+        <div class="text-dark opacity-75">You have a total fine of <strong class="text-danger">₹{{ total_fine}}</strong>. Please clear it soon.</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ================= UPCOMING REVIEW ================= -->
+{% if upcoming_review %}
+<div class="card border-0 shadow-soft mb-5 rounded-4 overflow-hidden">
+    <div
+        class="card-header bg-white border-bottom border-light py-3 px-4 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-calendar-days text-primary"></i>
+            <h6 class="mb-0 fw-bold text-dark">Upcoming Review</h6>
+        </div>
+        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+            {{ upcoming_review.get_status_display }}
+        </span>
+    </div>
+
+    <div class="card-body p-4">
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="d-flex flex-column gap-1">
+                    <small class="text-muted text-uppercase fw-bold x-small">Review Session</small>
+                    <div class="fw-bold fs-5 text-dark">{{ upcoming_review.session.review_name }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="d-flex flex-column gap-1">
+                    <small class="text-muted text-uppercase fw-bold x-small">Date</small>
+                    <div class="fw-medium text-dark"><i class="fa-regular fa-clock me-1 text-muted"></i> {{upcoming_review.session.scheduled_date }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="d-flex flex-column gap-1">
+                    <small class="text-muted text-uppercase fw-bold x-small">Reviewer</small>
+                    <div class="fw-medium text-dark">{{ upcoming_review.session.reviewer_name }}</div>
+                </div>
+            </div>
+        </div>
+
+        {% if upcoming_review.remarks %}
+        <div class="alert alert-light border border-light-subtle rounded-3 mb-4">
+            <h6 class="fw-bold text-dark mb-1"><i class="fa-solid fa-comment-dots text-muted me-2"></i>Remarks</h6>
+            <div class="text-secondary small">{{ upcoming_review.remarks }}</div>
+        </div>
+        {% endif %}
+
+        <div class="bg-light rounded-4 p-4 mt-2">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0">Tickets / Issues</h6>
+                <!-- Ticket Actions -->
+                <div>
+                    {% if pending_ticket %}
+                    <a href="{% url 'student_ticket' upcoming_review.id %}"
+                        class="btn btn-primary btn-sm rounded-pill px-3">
+                        <i class="fa-solid fa-pen-to-square me-1"></i> Edit Ticket
+                    </a>
+                    {% elif tickets|length < 2 %} <a href="{% url 'student_ticket' upcoming_review.id %}"
+                        class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                        <i class="fa-solid fa-ticket me-1"></i> Raise Ticket
+                        </a>
+                        {% else %}
+                        <span class="badge bg-secondary rounded-pill">Limit Reached</span>
+                        {% endif %}
+                </div>
+            </div>
+
+            <!-- ===== Ticket History ===== -->
+            {% if tickets %}
+            <div class="d-flex flex-column gap-2">
+                {% for t in tickets %}
+                <div
+                    class="p-3 bg-white rounded-3 border-start border-4 shadow-sm
+                        {% if t.status == 'pending' %}border-warning{% elif t.status == 'resolved' %}border-success{% else %}border-danger{% endif %}">
+
+                    <div class="d-flex justify-content-between mb-1">
+                        <span
+                            class="badge rounded-pill
+                                {% if t.status == 'pending' %}bg-warning text-dark{% elif t.status == 'resolved' %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ t.status|title }}
+                        </span>
+                        <small class="text-muted">{{ t.created_at|date:"d M Y, h:i A" }}</small>
+                    </div>
+                    <div class="text-dark small mb-0">{{ t.message }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center text-muted small py-3">
+                No tickets raised for this review.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Empty State for Upcoming -->
+<div class="card border-0 shadow-sm rounded-4 mb-5 p-5 text-center">
+    <div class="mb-3">
+        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center"
+            style="width: 70px; height: 70px;">
+            <i class="fa-regular fa-calendar-check text-muted opacity-50 fs-2"></i>
+        </div>
+    </div>
+    <h5 class="fw-bold text-dark">No Upcoming Reviews</h5>
+    <p class="text-muted small">You are all caught up! Check back later for new schedules.</p>
+</div>
+{% endif %}
+
+
+<!-- ================= COMPLETED REVIEWS ================= -->
+<div class="d-flex align-items-center justify-content-between mb-3 px-1">
+    <h5 class="fw-bold text-dark mb-0">Past Reviews</h5>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        {% if completed_reviews %}
+        <div class="list-group list-group-flush">
+            {% for review in completed_reviews %}
+            <div class="list-group-item p-4 hover-bg-light transition-all border-bottom">
+                <div class="row align-items-center gy-3">
+                    <div class="col-12 col-md-5">
+                        <h6 class="fw-bold text-dark mb-1">{{ review.session.review_name }}</h6>
+                        <div class="small text-muted">
+                            <i class="fa-regular fa-calendar me-1"></i> {{ review.session.scheduled_date|date:"F d, Y"}}
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-md-3">
+                        <span class="d-block text-muted x-small fw-bold text-uppercase mb-1">Status</span>
+                        <span class="badge bg-light text-dark border rounded-pill fw-medium">
+                            {{ review.get_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="col-6 col-md-2">
+                        <span class="d-block text-muted x-small fw-bold text-uppercase mb-1">Score</span>
+                        {% if review.score %}
+                        <span class="fw-bold text-dark">{{ review.score }}<span
+                                class="text-muted fw-normal">/10</span></span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-12 col-md-2 text-end">
+                        <a href="{% url 'student_review_detail' review.id %}"
+                            class="btn btn-outline-primary btn-sm rounded-pill w-100 w-md-auto">
+                            View
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <p class="text-muted mb-0">No completed reviews yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .x-small {
+        font-size: 0.7rem;
+        letter-spacing: 0.5px;
+    }
+
+    .hover-bg-light:hover {
+        background-color: #f8f9fa;
+    }
+
+    .shadow-soft {
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+    }
+</style>
+
+{% endblock %}

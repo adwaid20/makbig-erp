@@ -1,0 +1,81 @@
+{% extends "layouts/student_layout.html" %}
+
+{% block title %}Review Details{% endblock %}
+{% block page_title %}Review Details{% endblock %}
+
+{% block content %}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <!-- Review Name -->
+        <h5 class="mb-2">
+            {{ review.session.review_name }}
+        </h5>
+
+        <!-- Review Meta -->
+        <p class="text-muted mb-3">
+            <strong>Date:</strong>
+            {{ review.session.scheduled_date|date:"M d, Y" }}<br>
+
+            <strong>Reviewer:</strong>
+            {{ review.session.reviewer_name }}
+        </p>
+
+        <hr>
+
+        <!-- Review Result -->
+        <p>
+            <strong>Status:</strong>
+            <span class="badge 
+                {% if review.status == 'pass' %}bg-success
+                {% elif review.status == 'fail' %}bg-danger
+                {% else %}bg-secondary{% endif %}">
+                {{ review.get_status_display }}
+            </span>
+        </p>
+
+        {% if review.score %}
+        <p>
+            <strong>Score:</strong>
+            {{ review.score }}
+        </p>
+        {% endif %}
+
+        {% if review.remarks %}
+        <p>
+            <strong>Remarks:</strong><br>
+            {{ review.remarks }}
+        </p>
+        {% endif %}
+
+        {% if review.penalty_set.exists %}
+<hr>
+<h6 class="text-danger">Penalty</h6>
+
+{% for penalty in review.penalty_set.all %}
+    <p>
+        ₹{{ penalty.amount }} — {{ penalty.reason }}
+    </p>
+{% endfor %}
+{% endif %}
+
+
+        {% if review.session.review_link %}
+        <p>
+            <strong>Review Link:</strong><br>
+            <a href="{{ review.session.review_link }}" target="_blank">
+                {{ review.session.review_link }}
+            </a>
+        </p>
+        {% endif %}
+
+        <a href="{% url 'student_review' %}" class="btn btn-secondary mt-3">
+            Back to Reviews
+        </a>
+
+    </div>
+</div>
+
+{% endblock %}
+

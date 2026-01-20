@@ -1,0 +1,104 @@
+{% extends "layouts/student_layout.html" %}
+
+{% block title %}Dashboard | Makbig{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
+    <h4 class="fw-bold">Welcome back, {{ request.user.first_name }} 👋</h4>
+    <p class="text-muted">Here’s a quick overview of your learning journey.</p>
+</div>
+
+<div class="row g-4">
+
+    <!-- PROFILE -->
+    <div class="col-md-4">
+        <a href="#" class="text-decoration-none">
+            <div class="card shadow-sm h-100 hover-card">
+                <div class="card-body text-center">
+                    <div class="rounded-circle bg-primary text-white mx-auto mb-3 d-flex align-items-center justify-content-center"
+                         style="width:72px;height:72px;font-size:28px;">
+                        {{ request.user.first_name|slice:":1"|upper }}
+                    </div>
+                    <h6 class="fw-bold mb-1">{{ request.user.get_full_name }}</h6>
+                    <small class="text-muted">{{ request.user.email }}</small>
+                    <div class="badge bg-success mt-3">Student</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="col-md-4">
+        <a href="{% url 'student_review' %}" class="text-decoration-none">
+            <div class="card shadow-sm h-100 hover-card">
+                <div class="card-body">
+                    <i class="fa-solid fa-star text-warning fs-3 mb-3"></i>
+                    <h6 class="fw-bold">Reviews</h6>
+                    <p class="text-muted small mb-0">
+                        View feedback, performance, and review history.
+                    </p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="col-md-4">
+        <a href="{% url "student_attendance" %}" class="text-decoration-none">
+            <div class="card shadow-sm h-100 hover-card">
+                <div class="card-body">
+                    <i class="fa-solid fa-calendar-check text-primary fs-3 mb-3"></i>
+                    <h6 class="fw-bold">Attendance</h6>
+                    <p class="text-muted small mb-0">
+                        Track your daily attendance and sessions.
+                    </p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- WORKS -->
+    <div class="col-md-6">
+        <a href="#" class="text-decoration-none">
+            <div class="card shadow-sm h-100 hover-card">
+                <div class="card-body">
+                    <i class="fa-solid fa-briefcase text-info fs-3 mb-3"></i>
+                    <h6 class="fw-bold">Works</h6>
+                    <p class="text-muted small mb-0">
+                        View assigned tasks, submissions, and progress.
+                    </p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- FINES -->
+    <div class="col-md-6">
+        <a href="#" class="text-decoration-none">
+            <div class="card shadow-sm h-100 hover-card">
+                <div class="card-body">
+                    <i class="fa-solid fa-money-bill-wave text-danger fs-3 mb-3"></i>
+                    <h6 class="fw-bold">Fines</h6>
+                    <p class="text-muted small mb-0">
+                        Check outstanding fines and payment history.
+                    </p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+</div>
+
+<style>
+.hover-card {
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.hover-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.12);
+}
+</style>
+
+{% endblock %}

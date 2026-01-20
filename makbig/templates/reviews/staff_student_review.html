@@ -1,0 +1,504 @@
+{% extends "layouts/staff_layout.html" %}
+
+{% block title %}Student Review | Makbig{% endblock %}
+{% block page_title %}Student Review{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        /* Academic Palette: Teal & Slate (Matching Attendance Page) */
+        --primary-color: #0f766e;
+        /* Teal 700 */
+        --primary-light: #f0fdfa;
+        /* Teal 50 */
+        --primary-hover: #115e59;
+        /* Teal 800 */
+
+        --slate-800: #1e293b;
+        --slate-600: #475569;
+        --slate-400: #94a3b8;
+        --slate-200: #e2e8f0;
+        --slate-50: #f8fafc;
+
+        --success-bg: #dcfce7;
+        --success-text: #166534;
+
+        --warning-bg: #fef9c3;
+        --warning-text: #854d0e;
+
+        --danger-bg: #fee2e2;
+        --danger-text: #991b1b;
+
+        --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    /* --- Layout & Typography --- */
+    .review-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        color: var(--slate-800);
+    }
+
+    h5 {
+        font-weight: 700;
+        color: var(--slate-800);
+        letter-spacing: -0.01em;
+    }
+
+    .section-label {
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: var(--slate-600);
+    }
+
+    /* --- Cards --- */
+    .modern-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid var(--slate-200);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header-styled {
+        background: var(--slate-50);
+        border-bottom: 1px solid var(--slate-200);
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        color: var(--slate-800);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-body-styled {
+        padding: 1.5rem;
+    }
+
+    /* --- Forms & Inputs --- */
+    .form-label {
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: var(--slate-600);
+        margin-bottom: 0.4rem;
+    }
+
+    /* Target all standard inputs to style them uniformly */
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    input[type="url"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 0.6rem 0.8rem;
+        border: 1px solid #94a3b8;
+        /* Slate 400 - darker border */
+        border-radius: 8px;
+        font-size: 0.95rem;
+        /* Slightly larger */
+        font-weight: 500;
+        /* Bolder text */
+        color: var(--slate-800);
+        transition: all 0.2s;
+        background: #fff;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.2);
+        /* Stronger focus ring */
+        background: #f0fdfa;
+        /* Subtle tint on focus */
+    }
+
+    /* Special handling for read-only or distinct fields if needed */
+
+    /* Buttons */
+    .btn-primary-styled {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 4px rgba(15, 118, 110, 0.2);
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary-styled:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    .btn-success-styled {
+        background: #10b981;
+        /* Emerald 500 */
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.4rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .btn-success-styled:hover {
+        background: #059669;
+        /* Emerald 600 */
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-styled {
+        border: 1px solid var(--slate-200);
+        background: white;
+        color: var(--slate-600);
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-outline-styled:hover {
+        background: var(--slate-50);
+        color: var(--slate-800);
+        border-color: #cbd5e1;
+    }
+
+    /* --- Alerts & Badges --- */
+    .alert-warning-styled {
+        background: var(--warning-bg);
+        color: var(--warning-text);
+        border: 1px solid #fde047;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    .alert-success-styled {
+        background: var(--success-bg);
+        color: var(--success-text);
+        border: 1px solid #86efac;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    .badge-status {
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: var(--slate-200);
+        color: var(--slate-600);
+    }
+
+    /* --- Responsive Header --- */
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+        .d-flex-desktop {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 1rem;
+        }
+
+        .header-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .header-actions form,
+        .header-actions select {
+            flex-grow: 1;
+        }
+    }
+
+    /* --- Fine Section Styling --- */
+    .fine-section {
+        background: #fff1f2;
+        /* Rose 50 */
+        border: 1px solid #fecdd3;
+        /* Rose 200 */
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-top: 1.5rem;
+    }
+
+    .fine-header {
+        font-weight: 700;
+        color: var(--danger-text);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+</style>
+
+<div class="review-container p-3 p-lg-5">
+
+    <!-- ================= HEADER ================= -->
+    <div class="d-flex d-flex-desktop justify-content-between align-items-center mb-5">
+
+        <div>
+            <h5 class="mb-1" style="font-size: 1.5rem;">
+                {{ student.user.first_name }} {{ student.user.last_name }}
+            </h5>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge"
+                    style="background: var(--primary-light); color: var(--primary-color); border: 1px solid rgba(15, 118, 110, 0.2);">
+                    {{ student.course.name }}
+                </span>
+                <!-- Optional ID or other meta can go here -->
+            </div>
+        </div>
+
+        <div class="header-actions">
+            {% if total_fine > 0 %}
+            <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+                style="background: var(--warning-bg); color: var(--warning-text); border: 1px solid rgba(234, 179, 8, 0.3);">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <strong style="white-space: nowrap;">Total Fine: ₹{{ total_fine }}</strong>
+            </div>
+            {% endif %}
+
+            {% comment %} <form method="get" style="min-width: 200px;">
+                <select name="course" class="form-select form-select-sm" onchange="this.form.submit()"
+                    style="cursor: pointer; font-weight: 500;">
+                    {% for course in courses %}
+                    <option value="{{ course.id }}" {% if selected_course==course.id|stringformat:"s" %} selected {%
+                        endif %}>
+                        {{ course.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form> {% endcomment %}
+        </div>
+    </div>
+
+    <!-- ================= UPCOMING / CREATE REVIEW ================= -->
+    <div class="modern-card">
+        <div class="card-header-styled">
+            <span>{% if upcoming_review %}Upcoming Review{% else %}Schedule Review{% endif %}</span>
+            <i class="fa-regular fa-calendar-check text-muted"></i>
+        </div>
+
+        <div class="card-body-styled">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label class="form-label">Review Session Name</label>
+                    <div style="max-width: 500px;">
+                        {{ session_form.review_name }}
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">{{ session_form.scheduled_date.label }}</label>
+                        {{ session_form.scheduled_date }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">{{ session_form.reviewer_name.label }}</label>
+                        {{ session_form.reviewer_name }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">{{ session_form.review_link.label }}</label>
+                        {{ session_form.review_link }}
+                    </div>
+
+                    <div class="col-12">
+                        <hr class="text-muted opacity-25 my-2">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">{{ attendance_form.status.label }}</label>
+                        {{ attendance_form.status }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">{{ attendance_form.score.label }}</label>
+                        {{ attendance_form.score }}
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">{{ attendance_form.remarks.label }}</label>
+                        {{ attendance_form.remarks }}
+                    </div>
+                </div>
+
+                <!-- Penalty Section -->
+                <div class="fine-section">
+                    <div class="fine-header">
+                        <i class="fa-solid fa-gavel"></i>
+                        Penalty / Fine (Optional)
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" style="color: var(--danger-text);">Fine Amount (₹)</label>
+                            <input type="number" name="fine_{{ student.id }}" class="form-control" step="0.01" min="0"
+                                max="10000" inputmode="decimal" placeholder="0.00" style="border-color: #fca5a5;"
+                                value="{% if existing_fine %}{{ existing_fine.amount }}{% endif %}">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label" style="color: var(--danger-text);">Reason</label>
+                            <input type="text" name="fine_reason" class="form-control" placeholder="Reason for fine..."
+                                style="border-color: #fca5a5;"
+                                value="{% if existing_fine %}{{ existing_fine.reason }}{% endif %}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn-primary-styled">
+                        <i class="fa-solid fa-save me-2"></i> Save Review
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= REVIEW TICKETS ================= -->
+    <div class="modern-card">
+        <div class="card-header-styled">
+            <span>Review Tickets</span>
+            <i class="fa-solid fa-ticket text-muted field-icon"></i>
+        </div>
+
+        <div class="card-body-styled">
+
+            {% if pending_ticket %}
+            <div
+                class="alert-warning-styled mb-4 d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+                <div>
+                    <strong class="d-block mb-1 text-dark">
+                        <i class="fa-solid fa-circle-exclamation me-2"></i>Pending Ticket
+                    </strong>
+                    <div class="small text-muted mb-2">
+                        Raised by {{ pending_ticket.student.user.email }}
+                        on {{ pending_ticket.created_at|date:"d M Y, H:i" }}
+                    </div>
+                    <p class="mb-0 text-dark">
+                        {{ pending_ticket.message }}
+                    </p>
+                </div>
+
+                <!-- ✔ RESOLVE BUTTON -->
+                <form method="post" action="{% url 'resolve_ticket' pending_ticket.id %}">
+                    {% csrf_token %}
+                    <button class="btn-success-styled" title="Resolve Ticket">
+                        <i class="fa-solid fa-check me-1"></i> Resolve
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            {% if resolved_tickets %}
+            <div class="section-label mb-3">Resolved History</div>
+
+            <div class="d-flex flex-column gap-3">
+                {% for ticket in resolved_tickets %}
+                <div class="alert-success-styled py-2 px-3 d-flex justify-content-between align-items-center">
+                    <div class="small">
+                        <i class="fa-solid fa-check-circle me-2"></i>
+                        {{ ticket.message }}
+                    </div>
+                    <small class="text-success opacity-75 ms-3 text-nowrap">
+                        {{ ticket.created_at|date:"d M, H:i" }}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if not pending_ticket and not resolved_tickets %}
+            <div class="text-center py-4 text-muted">
+                <i class="fa-regular fa-circle-check fs-2 mb-2 opacity-50"></i>
+                <p class="mb-0">No tickets raised for this review.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ================= REVIEW HISTORY ================= -->
+    <div class="modern-card mb-0">
+        <div class="card-header-styled">
+            <span>Review History</span>
+            <i class="fa-solid fa-clock-rotate-left text-muted"></i>
+        </div>
+
+        <div class="card-body-styled">
+            {% for review in past_reviews %}
+            <div class="border-bottom pb-3 mb-3 last-no-border">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <strong class="text-dark">{{ review.session.review_name }}</strong>
+                        <div class="small text-muted">
+                            {{ review.session.scheduled_date|date:"M d, Y" }}
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge-status">
+                            {{ review.get_status_display }}
+                        </span>
+                        <a href="{% url 'staff_edit_completed_review' review.id %}" class="btn-outline-styled">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                    </div>
+                </div>
+
+                {% if review.score %}
+                <div class="small fw-semibold text-dark mb-1">
+                    Score: {{ review.score }}/10
+                </div>
+                {% endif %}
+
+                {% if review.remarks %}
+                <div class="p-2 bg-light rounded text-muted small fst-italic mb-2">
+                    "{{ review.remarks }}"
+                </div>
+                {% endif %}
+
+                {% for penalty in review.penalty_set.all %}
+                <div class="d-flex align-items-center gap-2 small text-danger fw-medium mt-1">
+                    <i class="fa-solid fa-scale-unbalanced"></i>
+                    Fine: ₹{{ penalty.amount }} — {{ penalty.reason }}
+                </div>
+                {% endfor %}
+
+            </div>
+            {% empty %}
+            <div class="text-center py-4 text-muted">
+                <p class="mb-0">No previous reviews found.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .last-no-border:last-child {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
+    }
+</style>
+{% endblock %}

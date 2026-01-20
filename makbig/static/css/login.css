@@ -1,0 +1,162 @@
+/* ---------- RESET ---------- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ---------- PAGE BACKGROUND ---------- */
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    min-height: 100vh;
+}
+
+/* ---------- CENTERING ---------- */
+.page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ---------- LOGIN CARD ---------- */
+.login-card {
+    background: #ffffff;
+    width: 380px;
+    padding: 35px;
+    border-radius: 10px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- BRAND ---------- */
+.brand {
+    text-align: center;
+    color: #1e3a8a;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+/* ---------- FORM ---------- */
+.form-group {
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+/* ---------- BUTTON ---------- */
+.login-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.login-btn:hover {
+    background-color: #1e40af;
+}
+
+/* ---------- ERROR ---------- */
+.error {
+    margin-top: 15px;
+    text-align: center;
+    color: #dc2626;
+    font-size: 14px;
+}
+
+
+.login-body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-box {
+    background: white;
+    padding: 30px;
+    width: 350px;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.login-box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 12px;
+}
+
+.login-box button {
+    width: 100%;
+    padding: 10px;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.error {
+    color: red;
+    text-align: center;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 70px;
+}
+
+.toggle-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 13px;
+    color: #007bff;
+}

@@ -1,0 +1,45 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fb;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+}
+
+.layout {
+    display: flex;
+    gap: 20px;
+}
+
+.card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 50%;
+}
+
+.alert.success {
+    background: #d4edda;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.review-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 15px;
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.btn.secondary {
+    background: #0d9488;
+}

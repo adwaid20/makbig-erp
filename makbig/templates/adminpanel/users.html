@@ -1,0 +1,269 @@
+{% extends "layouts/staff_layout.html" %}
+
+{% block title %}Users | Makbig{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+
+<!-- Header & Controls -->
+<div class="row g-3 align-items-center mb-4">
+    <div class="col-12 col-md">
+        <h4 class="mb-1 fw-bold text-dark">Students</h4>
+        <p class="text-muted mb-0 small">Manage permissions and view enrollment progress.</p>
+    </div>
+    <div class="col-12 col-md-auto d-flex gap-2">
+        <!-- Filter -->
+        <form method="get" class="d-flex align-items-center">
+            <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden bg-white pe-2 border">
+                <span class="input-group-text border-0 bg-transparent text-muted ps-3">
+                    <i class="fa-solid fa-filter"></i>
+                </span>
+                <select name="course" class="form-select border-0 form-select-sm shadow-none bg-transparent fw-medium"
+                    onchange="this.form.submit()" style="min-width: 140px; cursor: pointer;">
+                    <option value="">All Courses</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}" {% if selected_course == course.id|stringformat:"s" %}selected{% endif%}>
+                        {{ course.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+
+        <!-- Add Button -->
+        <a href="{% url 'add_student' %}"
+            class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm fw-medium d-flex align-items-center gap-2 hover-scale">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add Student</span>
+        </a>
+    </div>
+</div>
+
+<!-- Temp Password Alert -->
+{% if temp_email and temp_password %}
+<div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 position-relative overflow-hidden">
+    <div class="d-flex align-items-start gap-3 position-relative" style="z-index: 1;">
+        <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0"
+            style="width: 40px; height: 40px;">
+            <i class="fa-solid fa-key fs-5"></i>
+        </div>
+        <div class="flex-grow-1">
+            <h6 class="alert-heading fw-bold mb-1">Student Created Successfully</h6>
+            <p class="mb-2 text-opacity-75 small">Share these credentials immediately. They will not be shown again.</p>
+
+            <div class="d-flex flex-wrap gap-3 mt-3">
+                <div class="bg-white bg-opacity-50 px-3 py-2 rounded-2 border border-white border-opacity-25 shadow-sm">
+                    <small class="d-block text-uppercase fw-bold opacity-50" style="font-size: 0.65rem;">Email</small>
+                    <span class="font-monospace fw-bold user-select-all">{{ temp_email }}</span>
+                </div>
+                <div class="bg-white bg-opacity-50 px-3 py-2 rounded-2 border border-white border-opacity-25 shadow-sm">
+                    <small class="d-block text-uppercase fw-bold opacity-50" style="font-size: 0.65rem;">Temporary
+                        Password</small>
+                    <span class="font-monospace fw-bold text-danger user-select-all">{{ temp_password }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Messages -->
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }} border-0 shadow-sm rounded-3 d-flex align-items-center gap-3">
+    {% if message.tags == 'success' %}
+    <i class="fa-solid fa-circle-check fs-5"></i>
+    {% elif message.tags == 'error' or message.tags == 'danger' %}
+    <i class="fa-solid fa-circle-exclamation fs-5"></i>
+    {% else %}
+    <i class="fa-solid fa-circle-info fs-5"></i>
+    {% endif %}
+    <div>{{ message }}</div>
+</div>
+{% endfor %}
+
+<!-- Content Card -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+    <!-- Table Header (Visible on Desktop) -->
+    <div class="card-header bg-white border-0 py-3 d-none d-md-block">
+        <div class="row fw-bold text-uppercase text-secondary small px-2"
+            style="font-size: 0.75rem; letter-spacing: 0.5px;">
+            <div class="col-4 ps-4">Student</div>
+            <div class="col-2">Course</div>
+            <div class="col-2">Joined</div>
+            <div class="col-2">Progress</div>
+            <div class="col-2 text-end pe-4">Actions</div>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        {% for student in students %}
+        <!-- Responsive Row Item -->
+        <div class="student-row p-3 p-md-0 border-bottom">
+            <div class="row align-items-center m-0 gx-3">
+
+                <!-- Student Info -->
+                <div class="col-12 col-md-4 py-md-3 ps-md-4 mb-2 mb-md-0">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold me-3 flex-shrink-0"
+                            style="width: 42px; height: 42px;">
+                            {{ student.user.first_name|first|default:"U"|upper }}
+                            {{ student.user.last_name|first|default:""|upper }}
+                        </div>
+                        <div class="min-w-0">
+                            <h6 class="mb-0 fw-bold text-dark text-truncate">{{ student.user.first_name }} {{ student.user.last_name }}</h6>
+                            <div class="small text-muted text-truncate">{{ student.user.email }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course (Mobile Label handled via layout) -->
+                <div class="col-6 col-md-2 py-md-3">
+                    <span class="d-md-none text-uppercase text-muted fw-bold x-small d-block mb-1">Course</span>
+                    {% if student.course %}
+                    <span class="badge bg-light text-dark border rounded-pill fw-medium px-3 text-truncate max-w-100">
+                        {{ student.course.name }}
+                    </span>
+                    {% else %}
+                    <span class="text-muted small fst-italic">Not Enrolled</span>
+                    {% endif %}
+                </div>
+
+                <!-- Date -->
+                <div class="col-6 col-md-2 py-md-3">
+                    <span class="d-md-none text-uppercase text-muted fw-bold x-small d-block mb-1">Joined</span>
+                    <span class="text-secondary small fw-medium">
+                        <i class="fa-regular fa-calendar me-1 d-md-none"></i>{{ student.enrollment_date|date:"M d, Y" }}
+                    </span>
+                </div>
+
+                <!-- Progress -->
+                <div class="col-12 col-md-2 py-3 py-md-3">
+                    <span class="d-md-none text-uppercase text-muted fw-bold x-small d-block mb-1">Progress</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="progress flex-grow-1 bg-light" style="height: 6px; border-radius: 10px;">
+                            <div class="progress-bar rounded-pill bg-gradient-primary" role="progressbar"
+                                style="width: {{ student.progress_percent }}%;"
+                                aria-valuenow="{{ student.progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                        <span class="small fw-bold text-dark">{{ student.progress_percent }}%</span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="col-12 col-md-2 py-md-3 text-end pe-md-4 mt-2 mt-md-0 border-top border-md-0 pt-2 pt-md-0">
+                    <div class="d-flex justify-content-end gap-2">
+                        <!-- Example Edit Button (Optional, can be added later) -->
+                        <!-- <button class="btn btn-icon btn-light btn-sm rounded-circle text-muted">
+                            <i class="fa-solid fa-pen"></i>
+                        </button> -->
+
+                        <form method="post" action="{% url 'delete_student' student.id %}" class="d-inline-block">
+                            {% csrf_token %}
+                            <button type="submit"
+                                class="btn btn-light text-danger btn-sm px-3 rounded-pill fw-medium hover-danger transition-all"
+                                onclick="return confirm('Are you sure you want to delete this student?');">
+                                <span class="d-md-none">Delete</span>
+                                <i class="fa-solid fa-trash-can d-none d-md-inline" title="Delete Student"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <div class="mb-3">
+                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center"
+                    style="width: 80px; height: 80px;">
+                    <i class="fa-solid fa-users-slash text-muted opacity-50 fs-2"></i>
+                </div>
+            </div>
+            <h5 class="fw-bold text-dark">No Students Found</h5>
+            <p class="text-muted small mb-4">Try selecting a different course or add a new student.</p>
+            <a href="{% url 'add_student' %}" class="btn btn-outline-primary btn-sm rounded-pill px-4">
+                Add New Student
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    /* Custom Utilities */
+    .x-small {
+        font-size: 0.70rem;
+        letter-spacing: 0.5px;
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(45deg, #0d6efd, #0a58ca);
+    }
+
+    /* Hover Effects */
+    .hover-scale {
+        transition: transform 0.2s ease;
+    }
+
+    .hover-scale:hover {
+        transform: translateY(-2px);
+    }
+
+    .hover-danger {
+        transition: all 0.2s;
+    }
+
+    .hover-danger:hover {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+    }
+
+    .student-row {
+        transition: background-color 0.15s ease;
+        cursor: default;
+    }
+
+    .student-row:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Layout tweaks */
+    .border-md-0 {
+        border: none !important;
+    }
+
+    @media (min-width: 768px) {
+        .border-md-0 {
+            border: none !important;
+        }
+
+        .pt-md-0 {
+            padding-top: 0 !important;
+        }
+    }
+
+    /* Mobile Card enhancements */
+    @media (max-width: 767.98px) {
+        .student-row {
+            background: #fff;
+            margin-bottom: 0px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .student-row:last-child {
+            border-bottom: 0;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+</style>
+
+{% endblock %}
