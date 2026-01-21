@@ -13,11 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from dotenv import load_dotenv
-
-
-
-
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,6 +49,7 @@ INSTALLED_APPS = [
     'penalties',
     'attendance',
     'reviewtickets',
+    'works',
 ]
 
 AUTH_USER_MODEL='adminpanel.User'
@@ -154,6 +152,12 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 DEFAULT_FROM_EMAIL = 'Makbig <adwaidajayantc@gmail.com>'
 
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # LOGIN_URL = '/staff/login/'
 # LOGIN_REDIRECT_URL = '/staff/dashboard/'

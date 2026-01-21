@@ -1,0 +1,55 @@
+<h2>Work: {{ work.name }}</h2>
+<p>Course: {{ work.course.name }}</p>
+<p>Frequency: {{ work.frequency }}</p>
+
+<hr>
+
+<table border="1" cellpadding="8">
+  <tr>
+    <th>Student</th>
+    <th>Submitted?</th>
+    <th>Screenshot</th>
+    <th>Status</th>
+    <th>Action</th>
+  </tr>
+
+  {% for row in data %}
+    <tr>
+      <td>{{ row.student.user.email }}</td>
+
+      {% if row.submission %}
+        <td style="color:green;">Yes</td>
+        <td>
+          <a href="{{ row.submission.screenshot.url }}" target="_blank">
+            View
+          </a>
+        </td>
+        <td>{{ row.submission.status }}</td>
+
+        <td>
+          <form method="post" action="{% url 'update_submission_status' row.submission.id %}">
+            {% csrf_token %}
+            <select name="status">
+              <option value="pending" {% if row.submission.status == 'pending' %}selected{% endif %}>
+                Pending
+              </option>
+              <option value="verified" {% if row.submission.status == 'verified' %}selected{% endif %}>
+                Verified
+              </option>
+            </select>
+            <button type="submit">Update</button>
+          </form>
+        </td>
+
+      {% else %}
+        <td style="color:red;">No</td>
+        <td>—</td>
+        <td>—</td>
+        <td>Not submitted</td>
+      {% endif %}
+    </tr>
+  {% endfor %}
+</table>
+
+<br>
+<a href="{% url 'manage_works' %}">← Back to Manage Works</a>

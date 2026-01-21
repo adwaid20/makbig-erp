@@ -1,0 +1,7 @@
+<h3>Upload Screenshot</h3>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <input type="file" name="screenshot" required>
+  <button type="submit">Upload</button>
+</form>

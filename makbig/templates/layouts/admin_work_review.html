@@ -1,0 +1,25 @@
+<h2>Admin – Work Submissions</h2>
+
+{% for sub in submissions %}
+  <div style="border:1px solid #000; padding:10px; margin-bottom:10px;">
+    <p><strong>Student:</strong> {{ sub.assignment.student.user.email }}</p>
+    <p><strong>Course:</strong> {{ sub.assignment.work_type.course.name }}</p>
+    <p><strong>Work:</strong> {{ sub.assignment.work_type.name }}</p>
+    <p><strong>Status:</strong> {{ sub.status }}</p>
+
+    {% if sub.screenshot %}
+      <a href="{{ sub.screenshot.url }}" target="_blank">View Screenshot</a>
+    {% else %}
+      <p>No screenshot (deleted)</p>
+    {% endif %}
+
+    {% if sub.status != 'verified' %}
+      <form method="post" action="{% url 'verify_submission' sub.id %}">
+        {% csrf_token %}
+        <button type="submit">Mark as Verified</button>
+      </form>
+    {% endif %}
+  </div>
+{% empty %}
+  <p>No submissions yet.</p>
+{% endfor %}

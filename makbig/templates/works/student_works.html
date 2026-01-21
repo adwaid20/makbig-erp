@@ -1,0 +1,12 @@
+<h2>Your Assigned Works</h2>
+
+{% for assignment in assignments %}
+  <div style="border:1px solid #ccc; padding:10px; margin:10px;">
+    <p><strong>{{ assignment.work_type.name }}</strong></p>
+    <p>Type: {{ assignment.work_type.frequency }}</p>
+
+    <a href="{% url 'submit_work' assignment.id %}">
+      Submit Screenshot
+    </a>
+  </div>
+{% endfor %}

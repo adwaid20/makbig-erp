@@ -1,0 +1,69 @@
+<h2>Manage Works</h2>
+
+<hr>
+
+<h3>Add New Work</h3>
+
+<form method="post">
+  {% csrf_token %}
+
+  <label>Work Name</label><br>
+  <input type="text" name="name" required><br><br>
+
+  <label>Frequency</label><br>
+  <select name="frequency" required>
+    <option value="">Select</option>
+    <option value="daily">Daily</option>
+    <option value="weekly">Weekly</option>
+  </select><br><br>
+
+  <label>Course</label><br>
+  <select name="course" required>
+    <option value="">Select Course</option>
+    {% for course in courses %}
+      <option value="{{ course.id }}">{{ course.name }}</option>
+    {% endfor %}
+  </select><br><br>
+
+  <button type="submit">Add Work</button>
+</form>
+
+<hr>
+
+<h3>Existing Works</h3>
+
+<table border="1" cellpadding="8">
+  <tr>
+  <th>Name</th>
+  <th>Course</th>
+  <th>Frequency</th>
+  <th>Status</th>
+  <th>Actions</th>
+</tr>
+
+
+  {% for work in works %}
+  <tr>
+    <td>{{ work.name }}</td>
+    <td>{{ work.course.name }}</td>
+    <td>{{ work.frequency }}</td>
+    <td>
+  <a href="{% url 'work_submissions' work.id %}">
+    View Students
+  </a>
+</td>
+
+    <td>
+      {% if work.is_active %}
+        Active
+      {% else %}
+        Inactive
+      {% endif %}
+    </td>
+  </tr>
+  {% empty %}
+  <tr>
+    <td colspan="4">No works added yet.</td>
+  </tr>
+  {% endfor %}
+</table>
