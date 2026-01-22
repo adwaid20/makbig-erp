@@ -111,12 +111,7 @@ def student_dashboard(request):
     total_fine = Penalty.objects.filter(student=student).aggregate(total=Sum('amount'))['total'] or 0
 
     return render(
-        request,
-        'adminpanel/student_dashboard.html',
-        {
-            'total_fine': total_fine
-        }
-    )
+        request,'adminpanel/student_dashboard.html',{'total_fine': total_fine})
 
 
 
@@ -145,9 +140,7 @@ def add_student(request):
                 is_staff=False,
             )
 
-            StudentProfile.objects.create(
-                user=user,
-                course=form.cleaned_data['course'],
+            StudentProfile.objects.create(user=user,course=form.cleaned_data['course'],
                 # enrollment_date=form.cleaned_data['enrollment_date']
             )
 

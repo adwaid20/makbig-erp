@@ -116,12 +116,10 @@ def attendance_session(request):
         return redirect(f'/attendance/session/?date={selected_date}')
 
    
-    return render(
-        request,
-        'attendance/staff_attendance.html',
+    return render(request,'attendance/staff_attendance.html',
         {
             'students': students,
-            'students': students,
+            
             'courses': Course.objects.all(),
             'selected_date': selected_date,
             'existing_attendance': existing_attendance,
@@ -129,8 +127,7 @@ def attendance_session(request):
             'day_summary': day_summary_map,
             'month_days': month_days,
             'attendance_map': attendance_map,
-        }
-    )
+        })
 
 
 def student_attendance(request):
