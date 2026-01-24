@@ -250,6 +250,14 @@
         align-items: center;
         gap: 0.5rem;
     }
+
+    .alert-danger-styled {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+}
+
 </style>
 
 <div class="review-container p-3 p-lg-5">
@@ -353,7 +361,7 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label" style="color: var(--danger-text);">Fine Amount (₹)</label>
-                            <input type="number" name="fine_{{ student.id }}" class="form-control" step="0.01" min="0"
+                             <input type="number" name="fine_amount" class="form-control" step="0.01" min="0"
                                 max="10000" inputmode="decimal" placeholder="0.00" style="border-color: #fca5a5;"
                                 value="{% if existing_fine %}{{ existing_fine.amount }}{% endif %}">
                         </div>
@@ -400,26 +408,54 @@
                     </p>
                 </div>
 
-                <!-- ✔ RESOLVE BUTTON -->
-                <form method="post" action="{% url 'resolve_ticket' pending_ticket.id %}">
-                    {% csrf_token %}
-                    <button class="btn-success-styled" title="Resolve Ticket">
-                        <i class="fa-solid fa-check me-1"></i> Resolve
-                    </button>
-                </form>
+                <div class="d-flex gap-2">
+    <!-- ✔ RESOLVE -->
+    <form method="post" action="{% url 'resolve_ticket' pending_ticket.id %}">
+        {% csrf_token %}
+        <button class="btn-success-styled" title="Resolve Ticket">
+            <i class="fa-solid fa-check me-1"></i> Resolve
+        </button>
+    </form>
+
+    <!-- ✖ REJECT -->
+    <form method="post" action="{% url 'reject_ticket' pending_ticket.id %}">
+        {% csrf_token %}
+        <button class="btn btn-sm btn-danger" title="Reject Ticket">
+            <i class="fa-solid fa-xmark me-1"></i> Reject
+        </button>
+    </form>
+</div>
+
             </div>
             {% endif %}
 
             {% if resolved_tickets %}
-            <div class="section-label mb-3">Resolved History</div>
+            <div class="section-label mb-3">Ticket History</div>
+
 
             <div class="d-flex flex-column gap-3">
                 {% for ticket in resolved_tickets %}
-                <div class="alert-success-styled py-2 px-3 d-flex justify-content-between align-items-center">
-                    <div class="small">
-                        <i class="fa-solid fa-check-circle me-2"></i>
-                        {{ ticket.message }}
-                    </div>
+                <div class="
+    {% if ticket.status == 'resolved' %}
+        alert-success-styled
+    {% else %}
+        alert-danger-styled
+    {% endif %}
+    py-2 px-3 d-flex justify-content-between align-items-center
+">
+
+                    <div class="small fw-semibold">
+    {% if ticket.status == 'resolved' %}
+        <i class="fa-solid fa-check-circle me-2"></i>
+    {% else %}
+        <i class="fa-solid fa-xmark-circle me-2"></i>
+    {% endif %}
+    {{ ticket.message }}
+    <span class="ms-2 badge-status">
+        {{ ticket.get_status_display }}
+    </span>
+</div>
+
                     <small class="text-success opacity-75 ms-3 text-nowrap">
                         {{ ticket.created_at|date:"d M, H:i" }}
                     </small>

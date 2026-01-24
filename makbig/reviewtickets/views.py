@@ -6,15 +6,31 @@ from django.contrib import messages
 from reviews.models import ReviewAttendance
 from .models import ReviewTicket
 from .forms import ReviewTicketForm
-from adminpanel.models import StudentProfile
+from adminpanel.models import StudentProfile,Course
 # Create your views here.
 
+@staff_member_required
 def staff_ticket_list(request):
-    tickets= ReviewTicket.objects.filter(status='pending')
+    course_id = request.GET.get('course')
+
+    tickets = ReviewTicket.objects.filter(status='pending').select_related('student__user','review_attendance__session__course')
+
+    if course_id: tickets = tickets.filter(review_attendance__session__course_id=course_id)
+
 
     tickets.update(is_seen=True)
 
-    return render (request,'reviewtickets/staff_ticket_list.html',{'tickets':tickets})
+    courses = Course.objects.all()
+
+    return render(
+        request,
+        'reviewtickets/staff_ticket_list.html',
+        {
+            'tickets': tickets,
+            'courses': courses,
+            'selected_course': course_id
+        }
+    )
 
 
 @staff_member_required
@@ -22,9 +38,17 @@ def resolve_ticket(request, ticket_id):
     ticket = get_object_or_404(ReviewTicket, id=ticket_id)
     ticket.status = 'resolved'
     ticket.save()
+    messages.success(request, "Ticket resolved successfully.")
     return redirect('staff_ticket_list')
 
 
+@staff_member_required
+def reject_ticket(request, ticket_id):
+    ticket = get_object_or_404(ReviewTicket, id=ticket_id)
+    ticket.status = 'rejected'
+    ticket.save()
+    messages.warning(request, "Ticket rejected.")
+    return redirect('staff_ticket_list')
 
 
 

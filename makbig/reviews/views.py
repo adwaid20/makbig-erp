@@ -67,7 +67,7 @@ def staff_student_review(request, student_id):
 
         resolved_tickets = ReviewTicket.objects.filter(
         review_attendance=upcoming_review,
-        status='resolved'
+        status__in=['resolved','rejected']
         ).order_by('-created_at')
 
 
@@ -233,6 +233,15 @@ def student_review(request):
         status__in=['pass', 'fail']
     ).select_related('session').order_by('-session__scheduled_date')
 
+    upcoming_fine = None
+    if upcoming_review:
+        upcoming_fine = Penalty.objects.filter(
+            student=student,
+            review_attendance=upcoming_review,
+            penalty_type='review'
+        ).first()
+    
+
     tickets = []
     pending_ticket = None
 
@@ -253,8 +262,9 @@ def student_review(request):
         'total_fine': total_fine,
         'upcoming_review': upcoming_review,
         'completed_reviews': completed_reviews,
-        'tickets': tickets,                 # ✅ ALWAYS correct
-        'pending_ticket': pending_ticket,   # ✅ ALWAYS correct
+        'tickets': tickets,                 
+        'pending_ticket': pending_ticket,   
+        'upcoming_fine': upcoming_fine,
     }
 
     return render(request, 'reviews/student_review.html', context)

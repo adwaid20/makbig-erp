@@ -81,27 +81,29 @@
   {% if tickets %}
   <div class="card">
     <div class="card-body">
-      <h6 class="fw-bold mb-3">Ticket History</h6>
+      <h5 class="mt-4">Ticket History</h5>
 
-      {% for t in tickets %}
-        <div class="alert
-          {% if t.status == 'pending' %}alert-warning
-          {% elif t.status == 'resolved' %}alert-success
-          {% else %}alert-secondary{% endif %}
-          mb-3">
+{% for ticket in tickets %}
+<div class="card mb-2">
+    <div class="card-body">
+        <p>{{ ticket.message }}</p>
 
-          <div class="d-flex justify-content-between">
-            <strong>Status: {{ t.status|title }}</strong>
-            <small class="text-muted">
-              {{ t.created_at|date:"d M Y, h:i A" }}
-            </small>
-          </div>
+        <span class="badge
+            {% if ticket.status == 'pending' %}bg-warning
+            {% elif ticket.status == 'resolved' %}bg-success
+            {% else %}bg-danger{% endif %}">
+            {{ ticket.get_status_display }}
+        </span>
 
-          <div class="mt-2">
-            {{ t.message }}
-          </div>
-        </div>
-      {% endfor %}
+        <small class="text-muted d-block">
+            {{ ticket.created_at }}
+        </small>
+    </div>
+</div>
+{% empty %}
+<p>No tickets raised yet.</p>
+{% endfor %}
+
 
       {% if tickets|length >= 2 %}
         <small class="text-muted">

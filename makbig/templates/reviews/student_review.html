@@ -52,14 +52,47 @@
                     <small class="text-muted text-uppercase fw-bold x-small">Date</small>
                     <div class="fw-medium text-dark"><i class="fa-regular fa-clock me-1 text-muted"></i> {{upcoming_review.session.scheduled_date }}</div>
                 </div>
+
             </div>
             <div class="col-6 col-md-3">
                 <div class="d-flex flex-column gap-1">
-                    <small class="text-muted text-uppercase fw-bold x-small">Reviewer</small>
-                    <div class="fw-medium text-dark">{{ upcoming_review.session.reviewer_name }}</div>
+                    <small class="text-muted text-uppercase fw-bold x-small">Remarks</small>
+                    <div class="fw-medium text-dark">{{ upcoming_review.session.remarks }}</div>
                 </div>
+            
             </div>
+           <div class="col-6 col-md-3">
+    <div class="d-flex flex-column gap-1">
+        <small class="text-muted text-uppercase fw-bold x-small">Review Link</small>
+
+        {% if upcoming_review.session.review_link %}
+        <a href="{{ upcoming_review.session.review_link }}"
+           target="_blank"
+           class="fw-medium text-primary text-decoration-none">
+            Join Review
+            <i class="fa-solid fa-arrow-up-right-from-square ms-1 small"></i>
+        </a>
+        {% else %}
+        <span class="text-muted">—</span>
+        {% endif %}
+    </div>
+</div>
+
+
         </div>
+        {% if upcoming_fine %}
+<div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4">
+    <h6 class="fw-bold mb-1 text-dark">
+        <i class="fa-solid fa-gavel me-2"></i>Penalty Applied
+    </h6>
+    <div class="text-dark small">
+        <strong>Amount:</strong> ₹{{ upcoming_fine.amount }}<br>
+        <strong>Reason:</strong> {{ upcoming_fine.reason }}
+    </div>
+</div>
+{% endif %}
+
+
 
         {% if upcoming_review.remarks %}
         <div class="alert alert-light border border-light-subtle rounded-3 mb-4">
@@ -156,6 +189,9 @@
                             {{ review.get_status_display }}
                         </span>
                     </div>
+
+                    
+
 
                     <div class="col-6 col-md-2">
                         <span class="d-block text-muted x-small fw-bold text-uppercase mb-1">Score</span>
