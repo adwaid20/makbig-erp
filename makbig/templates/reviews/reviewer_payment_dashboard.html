@@ -1,0 +1,128 @@
+{% extends "layouts/staff_layout.html" %}
+{% block content %}
+
+<style>
+    .reviewer-card {
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .reviewer-header {
+        background: #f8fafc;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .badge-paid {
+        background: #dcfce7;
+        color: #166534;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .badge-unpaid {
+        background: #fee2e2;
+        color: #991b1b;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .student-chip {
+        display: inline-block;
+        background: #f1f5f9;
+        color: #334155;
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        margin: 2px 4px 2px 0;
+        white-space: nowrap;
+    }
+</style>
+
+<h4 class="mb-4">Reviewer Payment Dashboard</h4>
+
+{% regroup sessions by reviewer_name as reviewer_groups %}
+
+{% for reviewer in reviewer_groups %}
+<div class="card reviewer-card mb-4">
+
+    <!-- Reviewer Header -->
+    <div class="reviewer-header">
+        <strong>{{ reviewer.grouper }}</strong>
+        <span class="badge bg-secondary">
+            {{ reviewer.list|length }} Reviews
+        </span>
+    </div>
+
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 22%">Review Name</th>
+                    <th style="width: 15%">Date</th>
+                    <th style="width: 18%">Course</th>
+                    <th style="width: 25%">Students</th>
+                    <th style="width: 10%">Payment</th>
+                    <th style="width: 10%">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in reviewer.list %}
+                <tr>
+                    <td>{{ session.review_name }}</td>
+
+                    <td>
+                        {{ session.scheduled_date|date:"M d, Y" }}
+                    </td>
+
+                    <td>
+                        {{ session.course.name }}
+                    </td>
+
+                    <td>
+                        {% for attendance in session.student_reviews.all %}
+                            {% if attendance.status == 'pass' or attendance.status == 'fail' %}
+                                <span class="student-chip">
+                                    {{ attendance.student.user.first_name }}
+                                    {{ attendance.student.user.last_name }}
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+
+                    <td>
+                        {% if session.is_paid %}
+                            <span class="badge-paid">Paid</span>
+                        {% else %}
+                            <span class="badge-unpaid">Unpaid</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <form method="post"
+                              action="{% url 'toggle_reviewer_payment' session.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-primary">
+                                Toggle
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endfor %}
+
+{% endblock %}

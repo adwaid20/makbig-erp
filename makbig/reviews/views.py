@@ -8,6 +8,7 @@ from .forms import ReviewAttendanceForm,ReviewSessionForm
 from django.db.models import Sum
 from penalties.forms import PenaltyForm
 from reviewtickets.models import ReviewTicket
+from django.db.models import Count
 
 
 
@@ -203,6 +204,27 @@ def staff_edit_completed_review(request, attendance_id):
             'penalty_form': penalty_form,
         }
     )
+
+
+
+@login_required(login_url='staff_login')
+@user_passes_test(is_staff_user, login_url='staff_login')
+def reviewer_payment_dashboard(request):
+    sessions = (
+        ReviewSession.objects.filter(student_reviews__status__in=['pass','fail'])
+        .select_related('course').prefetch_related('student_reviews__student__user').distinct()
+        .order_by('reviewer_name', '-scheduled_date'))
+
+    return render(request,'reviews/reviewer_payment_dashboard.html',{'sessions': sessions})
+
+
+@login_required(login_url='staff_login')
+@user_passes_test(is_staff_user, login_url='staff_login')
+def toggle_reviewer_payment(request, session_id):
+    session = get_object_or_404(ReviewSession, id=session_id)
+    session.is_paid = not session.is_paid
+    session.save()
+    return redirect('reviewer_payment_dashboard')
 
 
 

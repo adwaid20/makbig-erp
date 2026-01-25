@@ -1,5 +1,4 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .forms import StaffLoginForm,StudentLoginForm,AddStudentForm
 from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
@@ -16,8 +15,11 @@ from django.conf import settings
 # from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from penalties.models import Penalty
 from django.db.models import Sum
+
+from penalties.models import Penalty
+from .forms import StaffLoginForm,StudentLoginForm,AddStudentForm
+
 
 
 

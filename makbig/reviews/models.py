@@ -14,6 +14,7 @@ class ReviewSession(models.Model):
     review_link=models.CharField(max_length=2550,blank=True,null=True)
     reviewer_name=models.CharField(max_length=250,blank=True,null=True)
     review_name=models.CharField(max_length=100)
+    is_paid = models.BooleanField(default=False,blank=True,null=True)
 
     def __str__(self):
         return f"{self.course.name} | {self.scheduled_date}"
