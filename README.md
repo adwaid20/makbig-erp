@@ -1,2 +1,2 @@
 # makbig-erp
-# makbig-erp
+Student managment system
