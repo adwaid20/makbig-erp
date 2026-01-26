@@ -1,25 +1,116 @@
-{% comment %} <h3>Upload Screenshot</h3>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Submit Work</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  <input type="file" name="screenshot" required>
-  <button type="submit">Upload</button>
-</form> {% endcomment %}
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            color: #212529;
+        }
 
+        .container {
+            max-width: 480px;
+            margin: 60px auto;
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
 
-<h2>Submit Work</h2>
+        h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
 
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
 
-    <label>Upload Screenshot</label>
-    <input
-        type="file"
-        name="screenshot"
-        accept="image/*"
-        capture="environment"
-        required
-    >
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            background: #fff;
+        }
 
-    <button type="submit">Submit</button>
-</form>
+        button {
+            width: 100%;
+            margin-top: 16px;
+            padding: 10px;
+            background: #0d6efd;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0b5ed7;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            text-decoration: none;
+            color: #0d6efd;
+            font-size: 14px;
+        }
+
+        .preview {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- 🔙 Back Button -->
+    <a href="{% url 'student_works' %}" class="back-link">
+        ← Back to My Works
+    </a>
+
+    <h2>Submit Work</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <label for="screenshot">Upload Screenshot</label>
+        <input
+            type="file"
+            id="screenshot"
+            name="screenshot"
+            accept="image/*"
+            capture="environment"
+            required
+        >
+
+        <div class="preview">
+            Accepted formats: JPG, PNG • Mobile camera supported
+        </div>
+
+        <button type="submit">
+            {% if submission %}
+                Resubmit
+            {% else %}
+                Submit
+            {% endif %}
+        </button>
+    </form>
+
+</div>
+
+</body>
+</html>

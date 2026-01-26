@@ -1,69 +1,124 @@
-<h2>Manage Works</h2>
+{% extends "layouts/staff_layout.html" %}
 
-<hr>
+{% block title %}Manage Works | Makbig{% endblock %}
 
-<h3>Add New Work</h3>
+{% block page_title %}
+Manage Works
+{% endblock %}
 
-<form method="post">
-  {% csrf_token %}
+{% block content %}
 
-  <label>Work Name</label><br>
-  <input type="text" name="name" required><br><br>
+<div class="container-fluid">
 
-  <label>Frequency</label><br>
-  <select name="frequency" required>
-    <option value="">Select</option>
-    <option value="daily">Daily</option>
-    <option value="weekly">Weekly</option>
-  </select><br><br>
+    <!-- Back Button -->
+    <div class="mb-3">
+        <a href="{% url 'staff_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
 
-  <label>Course</label><br>
-  <select name="course" required>
-    <option value="">Select Course</option>
-    {% for course in courses %}
-      <option value="{{ course.id }}">{{ course.name }}</option>
-    {% endfor %}
-  </select><br><br>
+    <!-- Add New Work -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
 
-  <button type="submit">Add Work</button>
-</form>
+            <h5 class="fw-bold mb-3">Add New Work</h5>
 
-<hr>
+            <form method="post">
+                {% csrf_token %}
 
-<h3>Existing Works</h3>
+                <div class="row g-3">
 
-<table border="1" cellpadding="8">
-  <tr>
-  <th>Name</th>
-  <th>Course</th>
-  <th>Frequency</th>
-  <th>Status</th>
-  <th>Actions</th>
-</tr>
+                    <div class="col-md-4">
+                        <label class="form-label">Work Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
 
+                    <div class="col-md-4">
+                        <label class="form-label">Frequency</label>
+                        <select name="frequency" class="form-select" required>
+                            <option value="">Select</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                        </select>
+                    </div>
 
-  {% for work in works %}
-  <tr>
-    <td>{{ work.name }}</td>
-    <td>{{ work.course.name }}</td>
-    <td>{{ work.frequency }}</td>
-    <td>
-  <a href="{% url 'work_submissions' work.id %}">
-    View Students
-  </a>
-</td>
+                    <div class="col-md-4">
+                        <label class="form-label">Course</label>
+                        <select name="course" class="form-select" required>
+                            <option value="">Select Course</option>
+                            {% for course in courses %}
+                                <option value="{{ course.id }}">{{ course.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-    <td>
-      {% if work.is_active %}
-        Active
-      {% else %}
-        Inactive
-      {% endif %}
-    </td>
-  </tr>
-  {% empty %}
-  <tr>
-    <td colspan="4">No works added yet.</td>
-  </tr>
-  {% endfor %}
-</table>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-plus me-1"></i> Add Work
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Existing Works -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+            <h5 class="fw-bold mb-3">Existing Works</h5>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Course</th>
+                            <th>Frequency</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for work in works %}
+                        <tr>
+                            <td class="fw-semibold">{{ work.name }}</td>
+                            <td>{{ work.course.name }}</td>
+                            <td class="text-capitalize">{{ work.frequency }}</td>
+
+                            <td>
+                                {% if work.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <a href="{% url 'work_submissions' work.id %}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fa-solid fa-users me-1"></i> View Students
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No works added yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

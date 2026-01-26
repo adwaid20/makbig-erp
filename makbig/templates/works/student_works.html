@@ -1,33 +1,107 @@
-<h2>Your Assigned Works</h2>
+{% extends "layouts/student_layout.html" %}
 
-<table>
-    <tr>
-        <th>Work</th>
-        <th>Status</th>
-        <th>Action</th>
-    </tr>
+{% block title %}My Works | Makbig{% endblock %}
 
-    {% for item in data %}
-    <tr>
-        <td>{{ item.assignment.work_type.name }}</td>
+{% block page_title %}
+My Assigned Works
+{% endblock %}
 
-        <td>
-            {% if item.submission %}
-                {{ item.submission.status|title }}
-            {% else %}
-                Pending
-            {% endif %}
-        </td>
+{% block content %}
 
-        <td>
-            {% if item.is_pending %}
-                <a href="{% url 'submit_work' item.assignment.id %}">
-                    Submit
-                </a>
-            {% else %}
-                Submitted
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="container-fluid">
+
+    <!-- Back Button -->
+    <div class="mb-3">
+        <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Works Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Work</th>
+                            <th>Status</th>
+                            <th>Screenshot</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in data %}
+                        <tr>
+                            <!-- Work Name -->
+                            <td class="fw-semibold">
+                                {{ item.assignment.work_type.name }}
+                            </td>
+
+                            <!-- Status Badge -->
+                            <td>
+                                {% if item.submission %}
+                                    {% if item.submission.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Verified</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Not Submitted</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Screenshot -->
+                            <td>
+                                {% if item.submission %}
+                                    <a href="{{ item.submission.screenshot.url }}"
+                                       target="_blank"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fa-solid fa-image me-1"></i> View
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Action -->
+                            <td>
+                                {% if item.submission %}
+                                    {% if item.submission.status == 'pending' %}
+                                        <a href="{% url 'submit_work' item.assignment.id %}"
+                                           class="btn btn-sm btn-warning">
+                                            <i class="fa-solid fa-rotate me-1"></i> Resubmit
+                                        </a>
+                                    {% else %}
+                                        <span class="text-success fw-semibold">
+                                            <i class="fa-solid fa-circle-check me-1"></i> Verified
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{% url 'submit_work' item.assignment.id %}"
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fa-solid fa-upload me-1"></i> Submit
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                No works assigned yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

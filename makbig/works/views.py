@@ -17,26 +17,45 @@ def submit_work(request, assignment_id):
         student=request.user.studentprofile
     )
 
-    if WorkSubmission.objects.filter(assignment=assignment).exists():
+    submission = WorkSubmission.objects.filter(
+        assignment=assignment
+    ).first()
+
+    # ❌ Verified work cannot be edited
+    if submission and submission.status == 'verified':
         return redirect('student_works')
 
     if request.method == 'POST':
         screenshot = request.FILES.get('screenshot')
 
         if screenshot:
-            WorkSubmission.objects.create(
-                assignment=assignment,
-                submitted_date=timezone.now().date(),
-                screenshot=screenshot
-            )
+            if submission:
+                # 🔁 RESUBMISSION (pending only)
+                submission.screenshot = screenshot
+                submission.submitted_date = timezone.now().date()
+                submission.status = 'pending'
+                submission.reviewed_by = None
+                submission.reviewed_at = None
+                submission.save()
+            else:
+                # 🆕 First submission
+                WorkSubmission.objects.create(
+                    assignment=assignment,
+                    submitted_date=timezone.now().date(),
+                    screenshot=screenshot
+                )
 
         return redirect('student_works')
 
     return render(
         request,
         'works/submit_work.html',
-        {'assignment': assignment}
+        {
+            'assignment': assignment,
+            'submission': submission
+        }
     )
+
 
 
 # @staff_member_required

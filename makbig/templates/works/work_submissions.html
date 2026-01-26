@@ -1,55 +1,131 @@
-<h2>Work: {{ work.name }}</h2>
-<p>Course: {{ work.course.name }}</p>
-<p>Frequency: {{ work.frequency }}</p>
+{% extends "layouts/staff_layout.html" %}
 
-<hr>
+{% block title %}Work Submissions | Makbig{% endblock %}
 
-<table border="1" cellpadding="8">
-  <tr>
-    <th>Student</th>
-    <th>Submitted?</th>
-    <th>Screenshot</th>
-    <th>Status</th>
-    <th>Action</th>
-  </tr>
+{% block page_title %}
+Work Submissions
+{% endblock %}
 
-  {% for row in data %}
-    <tr>
-      <td>{{ row.student.user.email }}</td>
+{% block content %}
 
-      {% if row.submission %}
-        <td style="color:green;">Yes</td>
-        <td>
-          <a href="{{ row.submission.screenshot.url }}" target="_blank">
-            View
-          </a>
-        </td>
-        <td>{{ row.submission.status }}</td>
+<div class="container-fluid">
 
-        <td>
-          <form method="post" action="{% url 'update_submission_status' row.submission.id %}">
-            {% csrf_token %}
-            <select name="status">
-              <option value="pending" {% if row.submission.status == 'pending' %}selected{% endif %}>
-                Pending
-              </option>
-              <option value="verified" {% if row.submission.status == 'verified' %}selected{% endif %}>
-                Verified
-              </option>
-            </select>
-            <button type="submit">Update</button>
-          </form>
-        </td>
+    <!-- Back Button -->
+    <div class="mb-3">
+        <a href="{% url 'manage_works' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Manage Works
+        </a>
+    </div>
 
-      {% else %}
-        <td style="color:red;">No</td>
-        <td>—</td>
-        <td>—</td>
-        <td>Not submitted</td>
-      {% endif %}
-    </tr>
-  {% endfor %}
-</table>
+    <!-- Work Info -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold mb-1">{{ work.name }}</h5>
+            <div class="text-muted small">
+                Course: {{ work.course.name }} ·
+                Frequency: {{ work.frequency|capfirst }}
+            </div>
+        </div>
+    </div>
 
-<br>
-<a href="{% url 'manage_works' %}">← Back to Manage Works</a>
+    <!-- Submissions Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Student</th>
+                            <th>Submitted</th>
+                            <th>Screenshot</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for row in data %}
+                        <tr>
+                            <!-- Student -->
+                            <td class="fw-semibold">
+                                {{ row.student.user.email }}
+                            </td>
+
+                            {% if row.submission %}
+                                <!-- Submitted -->
+                                <td>
+                                    <span class="badge bg-success">Yes</span>
+                                </td>
+
+                                <!-- Screenshot Preview -->
+                                <td>
+                                    <a href="{{ row.submission.screenshot.url }}"
+                                       target="_blank"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fa-solid fa-image me-1"></i> View
+                                    </a>
+                                </td>
+
+                                <!-- Status -->
+                                <td>
+                                    {% if row.submission.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Verified</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Update Status -->
+                                <td>
+                                    <form method="post"
+                                          action="{% url 'update_submission_status' row.submission.id %}"
+                                          class="d-flex gap-2 align-items-center">
+                                        {% csrf_token %}
+
+                                        <select name="status" class="form-select form-select-sm w-auto">
+                                            <option value="pending"
+                                                {% if row.submission.status == 'pending' %}selected{% endif %}>
+                                                Pending
+                                            </option>
+                                            <option value="verified"
+                                                {% if row.submission.status == 'verified' %}selected{% endif %}>
+                                                Verified
+                                            </option>
+                                        </select>
+
+                                        <button type="submit"
+                                                class="btn btn-sm btn-primary">
+                                            Update
+                                        </button>
+                                    </form>
+                                </td>
+
+                            {% else %}
+                                <!-- Not Submitted -->
+                                <td>
+                                    <span class="badge bg-danger">No</span>
+                                </td>
+                                <td class="text-muted">—</td>
+                                <td class="text-muted">—</td>
+                                <td class="text-muted">Not submitted</td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No students found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
