@@ -8,12 +8,6 @@ from adminpanel.models import StudentProfile,Course
 
 # Create your views here.
 
-@login_required
-def student_works(request):
-    student = get_object_or_404(StudentProfile, user=request.user)
-    assignments = WorkAssignment.objects.filter(student=student)
-    return render(request, 'works/student_works.html', {'assignments': assignments})
-
 
 @login_required
 def submit_work(request, assignment_id):
@@ -23,17 +17,26 @@ def submit_work(request, assignment_id):
         student=request.user.studentprofile
     )
 
-    if request.method == 'POST':
-        screenshot = request.FILES['screenshot']
-
-        WorkSubmission.objects.create(
-            assignment=assignment,
-            submitted_date=timezone.now().date(),
-            screenshot=screenshot
-        )
+    if WorkSubmission.objects.filter(assignment=assignment).exists():
         return redirect('student_works')
 
-    return render(request, 'works/submit_work.html')
+    if request.method == 'POST':
+        screenshot = request.FILES.get('screenshot')
+
+        if screenshot:
+            WorkSubmission.objects.create(
+                assignment=assignment,
+                submitted_date=timezone.now().date(),
+                screenshot=screenshot
+            )
+
+        return redirect('student_works')
+
+    return render(
+        request,
+        'works/submit_work.html',
+        {'assignment': assignment}
+    )
 
 
 # @staff_member_required
@@ -137,3 +140,34 @@ def update_submission_status(request, submission_id):
         work_id=submission.assignment.work_type.id
     )
 
+@login_required
+def student_works(request):
+    student = get_object_or_404(StudentProfile, user=request.user)
+
+    assignments = (
+        WorkAssignment.objects
+        .filter(student=student)
+        .select_related('work_type')
+    )
+
+    submissions = {
+        s.assignment_id: s
+        for s in WorkSubmission.objects.filter(
+            assignment__student=student
+        )
+    }
+
+    data = []
+    for assignment in assignments:
+        submission = submissions.get(assignment.id)
+        data.append({
+            'assignment': assignment,
+            'submission': submission,
+            'is_pending': submission is None
+        })
+
+    return render(
+        request,
+        'works/student_works.html',
+        {'data': data}
+    )

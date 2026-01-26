@@ -48,8 +48,15 @@ class WorkSubmission(models.Model):
         ordering = ['-created_at']
 
     def save(self, *args, **kwargs):
+        if self.pk:
+            old = WorkSubmission.objects.filter(pk=self.pk).first()
+            if old and old.screenshot == self.screenshot:
+                super().save(*args, **kwargs)
+                return
+
         if self.screenshot:
             self.screenshot = compress_image(self.screenshot)
+
         super().save(*args, **kwargs)
 
     def __str__(self):

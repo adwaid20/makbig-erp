@@ -1,7 +1,25 @@
-<h3>Upload Screenshot</h3>
+{% comment %} <h3>Upload Screenshot</h3>
 
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
   <input type="file" name="screenshot" required>
   <button type="submit">Upload</button>
+</form> {% endcomment %}
+
+
+<h2>Submit Work</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label>Upload Screenshot</label>
+    <input
+        type="file"
+        name="screenshot"
+        accept="image/*"
+        capture="environment"
+        required
+    >
+
+    <button type="submit">Submit</button>
 </form>

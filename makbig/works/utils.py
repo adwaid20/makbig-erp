@@ -3,10 +3,20 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 
 def compress_image(image):
-    img=Image.open(image)
-    img=img.convert('RGB')
+    img = Image.open(image)
 
-    buffer=BytesIO()
-    img.save(buffer,format='JPEG', quality=60, optimize=True)
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
 
-    return ContentFile(buffer.getvalue(),image.name)
+    buffer = BytesIO()
+    img.save(
+        buffer,
+        format='JPEG',
+        quality=60,
+        optimize=True
+    )
+
+    return ContentFile(
+        buffer.getvalue(),
+        name=image.name.rsplit('.', 1)[0] + '.jpg'
+    )
