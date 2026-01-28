@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect,get_object_or_404
 from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
-from .models import User,StudentProfile,Course
+from .models import StudentProfile,Course
 from django.utils.crypto import get_random_string
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
