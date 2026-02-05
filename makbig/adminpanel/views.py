@@ -124,11 +124,11 @@ def add_student(request):
     form=AddStudentForm(request.POST or None)
     if request.method=='POST':
         if form.is_valid():
-            email=form.cleaned_data['email']
+            email=form.cleaned_data['email']  #just to check if email already registered or not
 
             if User.objects.filter(email=email).exists():
-                messages.error(request,"Student with this email id already exist.")
-                return render(request,'adminpanel/add_student.html',{'form':form})
+                messages.error(request,"Student with this email id already exist.") #just to check if email already registered or not
+                return render(request,'adminpanel/add_student.html',{'form':form})  #just to check if email already registered or not
 
             temp_password = get_random_string(8)
             
