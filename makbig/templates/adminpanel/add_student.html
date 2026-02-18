@@ -108,6 +108,21 @@
             font-size: 0.75rem;
             color: #6c757d;
         }
+
+        /* Django form errors */
+.errorlist {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0.25rem;
+    margin-bottom: 0;
+    color: #dc3545;
+    font-size: 0.8rem;
+}
+
+.errorlist li {
+    margin-top: 0.25rem;
+}
+
     </style>
 </head>
 
@@ -149,6 +164,12 @@
 
                 <!-- Raw Form Container -->
                 <div class="django-raw-form">
+                    {% if form.non_field_errors %}
+<div class="alert alert-danger">
+    {{ form.non_field_errors }}
+</div>
+{% endif %}
+
                     {{ form.as_p }}
                 </div>
 
