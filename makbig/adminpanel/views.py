@@ -221,10 +221,11 @@ def student_forget_password(request):
     return render (request, 'adminpanel/student_forgot_password.html')
 
 
+@never_cache
 def student_reset_password(request, uidb64, token):
     try:
         uid=force_str(urlsafe_base64_decode(uidb64))
-        user=User.objects.filter()
+        user=User.objects.filter(pk=uid,is_student=True,is_active=True).first()
     except (TypeError,ValueError,OverflowError,User.DoesNotExist):
         user= None
 
@@ -244,6 +245,10 @@ def student_reset_password(request, uidb64, token):
         password=request.POST.get("password","").strip()
         confirm_password=request.POST.get("confirm_password","").strip()
 
+        if not password:
+            messages.error(request, "Password cannot be empty or spaces only.")
+            return redirect(request.path)
+        
         if password != confirm_password:
             messages.error(request,"Passwords do not match.")
             return redirect(request.path)
@@ -265,6 +270,11 @@ def student_reset_password(request, uidb64, token):
 
 
 @login_required
+@never_cache
 def student_profile(request):
-    student = StudentProfile.objects.get(user=request.user)
+    try:
+        student = get_object_or_404(StudentProfile,user=request.user)
+    except StudentProfile.DoesNotExist:
+        messages.error(request,"Student profile not found")
+        return redirect("student_dashboard")
     return render(request, "adminpanel/student_profile.html", {"student": student})
