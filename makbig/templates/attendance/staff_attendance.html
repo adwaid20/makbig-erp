@@ -36,6 +36,22 @@
     --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   }
 
+
+  /* ---- Remove number input spinners ---- */
+
+/* Chrome, Edge, Safari */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+
   /* --- Layout & Typography --- */
   .attendance-wrapper {
     display: grid;
@@ -495,9 +511,9 @@
           <thead>
             <tr>
               <th width="25%">Student</th>
-              <th width="30%">Status</th>
-              <th width="25%">Remark</th>
-              <th width="25%">Fine (₹)</th>
+              <th width="15%">Status</th>
+              <th width="30%">Remark</th>
+              <th width="30%">Fine (₹)</th>
             </tr>
           </thead>
           <tbody>
@@ -541,8 +557,8 @@
 
               <!-- FINE -->
               <td>
-                <input type="number" name="fine_{{ student.id }}" class="form-control-clean" placeholder="0.00"
-                  step="0.01" min="0" max="10000" inputmode="decimal" value="{{ fine.amount|default_if_none:'' }}">
+                <input type="number" name="fine_{{ student.id }}" class="form-control-clean" placeholder="0"
+                 min="0" max="10000" inputmode="decimal" value="{{ fine.amount|default_if_none:'' }}">
               </td>
 
             </tr>

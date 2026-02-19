@@ -153,6 +153,14 @@
 </head>
 
 <body>
+    {% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li class="{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
 
     <!-- Mobile Sidebar Backdrop (Custom implementation for simplicity without full BS offcanvas heavy markup if preferred, but using standard pattern) -->
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>

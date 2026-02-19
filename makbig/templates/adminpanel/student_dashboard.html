@@ -74,20 +74,27 @@
         </a>
     </div>
 
+
     <!-- FINES -->
-    <div class="col-md-6">
-        <a href="#" class="text-decoration-none">
-            <div class="card shadow-sm h-100 hover-card">
-                <div class="card-body">
-                    <i class="fa-solid fa-money-bill-wave text-danger fs-3 mb-3"></i>
-                    <h6 class="fw-bold">Fines</h6>
-                    <p class="text-muted small mb-0">
-                        Check outstanding fines and payment history.
-                    </p>
+<div class="col-md-6">
+    <a href="#" class="text-decoration-none">
+        <div class="card shadow-sm h-100 hover-card">
+            <div class="card-body">
+                <i class="fa-solid fa-money-bill-wave text-danger fs-3 mb-3"></i>
+                <h6 class="fw-bold">Fines</h6>
+                <p class="text-muted small mb-2">
+                    Check outstanding fines and payment history.
+                </p>
+
+                <!-- Total Fine Display -->
+                <div class="fw-bold text-danger fs-5">
+                    ₹ {{ total_fine }}
                 </div>
+
             </div>
-        </a>
-    </div>
+        </div>
+    </a>
+</div>
 
 </div>
 
