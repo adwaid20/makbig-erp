@@ -8,6 +8,8 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from .servives import create_student
 from django.core.paginator import Paginator
+from django.utils.http import urlsafe_base64_encode,urlsafe_base64_decode
+from django.utils.encoding import force_bytes,force_str
 # Create your views here.
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import get_user_model
@@ -181,9 +183,10 @@ def delete_student(request, student_id):
 @login_required
 def student_logout(request):
     # Mark all messages as used (flush them)
-    storage = messages.get_messages(request)
-    storage.used = True
+    # storage = messages.get_messages(request)
+    # storage.used = True
     logout(request)
+    list(messages.get_messages(request))
     return redirect('home')
 
 
@@ -191,16 +194,17 @@ def student_forget_password(request):
     if request.method =='POST':
         email=request.POST.get("email")
 
-        user=User.objects.filter(email=email,is_student=True).first() 
+        user=User.objects.filter(email=email,is_student=True,is_active=True).first() 
 
         if not user:
             messages.error(request,"No student found with this email")
             return redirect('student_forget_password')
         
         token = default_token_generator.make_token(user)
-        uid=user.pk
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
 
-        reset_link= request.build_absolute_uri(reverse("student_reset_password", kwargs={"uid":uid,"token":token}))
+
+        reset_link= request.build_absolute_uri(reverse("student_reset_password", kwargs={"uid":uidb64,"token":token}))
 
         send_mail(
             subject="Makbig-Reset your Password",
@@ -217,16 +221,28 @@ def student_forget_password(request):
     return render (request, 'adminpanel/student_forgot_password.html')
 
 
-def student_reset_password(request, uid, token):
-    user=User.objects.filter(pk=uid, is_student=True).first()
+def student_reset_password(request, uidb64, token):
+    try:
+        uid=force_str(urlsafe_base64_decode(uidb64))
+        user=User.objects.filter()
+    except (TypeError,ValueError,OverflowError,User.DoesNotExist):
+        user= None
+
 
     if not user or not default_token_generator.check_token(user,token):
-        messages.error(request,"Invalid or expired rest link")
+        messages.error(request,"Invalid or expired reset link")
         return redirect('student_login')
     
+    #usually used form aan and it is better , but ivide form use akathe kond3 raw input handling
+    # if request.method == 'POST':
+    # form = ResetPasswordForm(request.POST)
+    # if form.is_valid():
+    #     password = form.cleaned_data['password']
+
+    
     if request.method=='POST':
-        password=request.POST.get("password")
-        confirm_password=request.POST.get("confirm_password")
+        password=request.POST.get("password","").strip()
+        confirm_password=request.POST.get("confirm_password","").strip()
 
         if password != confirm_password:
             messages.error(request,"Passwords do not match.")
@@ -242,7 +258,7 @@ def student_reset_password(request, uid, token):
         user.set_password(password)
         user.save()
 
-        messages.success(request,"Password reset sucessfully")
+        messages.success(request,"Password reset successfully")
         return redirect('student_login')
     
     return render (request,"adminpanel/student_reset_password.html")
