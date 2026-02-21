@@ -25,6 +25,14 @@ class WorkAssignment(models.Model):
     assigned_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['student', 'work_type'],
+                name='unique_student_work'
+            )
+        ]
+        
     def __str__(self):
         return f"{self.student} → {self.work_type}"
     
