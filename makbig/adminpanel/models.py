@@ -1,12 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Sum
+from django.core.exceptions import ValidationError
 # Create your models here.
 class User(AbstractUser):
-    email=models.EmailField(unique=True)
-    mobile_number=models.IntegerField(blank=True, null=True)
+    email=models.EmailField(unique=True,db_index=True)
+    mobile_number = models.CharField(max_length=15, blank=True, null=True)
     is_student=models.BooleanField(default=False)
 
+    def clean(self):
+        if self.is_student and self.is_staff:
+            raise ValidationError("User cannot be both student and staff.")
 
 
     def __str__(self):
@@ -23,7 +27,7 @@ class Course(models.Model):
     
 class StudentProfile(models.Model):
     user=models.OneToOneField(User, on_delete=models.CASCADE)
-    course=models.ForeignKey(Course,on_delete=models.SET_NULL,null=True)
+    course=models.ForeignKey(Course,on_delete=models.PROTECT)
     enrollment_date=models.DateField(auto_now_add=True)
     progress_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
 

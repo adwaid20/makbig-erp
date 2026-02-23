@@ -11,7 +11,7 @@ def assign_works_on_student_creation(sender, instance, created, **kwargs):
         return
     
     course = instance.course
-    if not course:
+    if not course: #fail safe aan , course illand ende course work
         return
 
     def assign_works():

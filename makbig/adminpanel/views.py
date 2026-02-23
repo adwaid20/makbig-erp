@@ -123,9 +123,9 @@ def add_student(request):
     if request.method=='POST'and form.is_valid():
             email=form.cleaned_data['email']  #just to check if email already registered or not
 
-            if User.objects.filter(email=email).exists():
-                messages.error(request,"Student with this email id already exist.") #just to check if email already registered or not
-                return render(request,'adminpanel/add_student.html',{'form':form})  #just to check if email already registered or not
+            # if User.objects.filter(email=email).exists():
+            #     messages.error(request,"Student with this email id already exist.") #just to check if email already registered or not
+            #     return render(request,'adminpanel/add_student.html',{'form':form})  #just to check if email already registered or not
 
             create_student(form.cleaned_data)
             messages.success(request,"Student created and email sent sucessfully.")
