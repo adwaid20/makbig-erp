@@ -204,7 +204,7 @@ def student_forget_password(request):
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
 
 
-        reset_link= request.build_absolute_uri(reverse("student_reset_password", kwargs={"uid":uidb64,"token":token}))
+        reset_link= request.build_absolute_uri(reverse("student_reset_password", kwargs={"uidb64":uidb64,"token":token}))
 
         send_mail(
             subject="Makbig-Reset your Password",

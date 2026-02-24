@@ -16,7 +16,7 @@ from django.db.models import Count
 
 
 def is_staff_user(user):
-    return user.is_authenticated and (user.is_staff or user.is_superuser)
+    return user.is_active and (user.is_staff or user.is_superuser)
 
 @login_required(login_url='staff_login')
 @user_passes_test(is_staff_user, login_url='staff_login')

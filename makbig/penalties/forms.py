@@ -22,3 +22,10 @@ class PenaltyForm(forms.ModelForm):
             )
 
         return amount
+
+
+
+class PenaltyUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Penalty
+        fields = ['amount']

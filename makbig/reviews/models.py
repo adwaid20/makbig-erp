@@ -11,14 +11,15 @@ class ReviewSession(models.Model):
     course=models.ForeignKey(Course,on_delete=models.CASCADE,related_name='review_sessions')
     created_at=models.DateTimeField(auto_now_add=True)
     scheduled_date=models.DateField()
-    review_link=models.CharField(max_length=2550,blank=True,null=True)
+    review_link=models.URLField(null=True, blank=True,max_length=600)
     reviewer_name=models.CharField(max_length=250,blank=True,null=True)
     review_name=models.CharField(max_length=100)
     is_paid = models.BooleanField(default=False,blank=True,null=True)
 
     def __str__(self):
         return f"{self.course.name} | {self.scheduled_date}"
-    
+
+
 
 
 class ReviewAttendance(models.Model):
@@ -36,11 +37,11 @@ class ReviewAttendance(models.Model):
     status=models.CharField(max_length=50, choices=STATUS_CHOICES,default='eligible')
     created_at = models.DateTimeField(auto_now_add=True)
 
-
+#student cannot be in 2 upcomming reviews simultameously
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['student'],
+                fields=['student','session'],
                 condition=Q(status__in=['eligible', 'not_eligible']),
                 name='one_active_upcoming_review_per_student'
             )
@@ -50,6 +51,8 @@ class ReviewAttendance(models.Model):
     def __str__(self):
         return f"Review -{self.student.user.email}"
     
-
+    @property
+    def review_name(self):
+        return self.session.review_name
 
 
