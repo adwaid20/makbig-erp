@@ -1,0 +1,76 @@
+{% extends "layouts/staff_layout.html" %}
+{% block content %}
+
+<h2>{{ student.user.get_full_name }} - Penalties</h2>
+
+<a href="{% url 'fines' %}" class="btn btn-secondary btn-sm mb-3">
+    <i class="fa-solid fa-arrow-left"></i> Back
+</a>
+
+<p><strong>Total Unpaid:</strong> ₹ {{ total_unpaid }}</p>
+
+<hr>
+
+<h3>Unpaid Penalties</h3>
+
+<table border="1" cellpadding="8">
+<tr>
+    <th>Type</th>
+    <th>Details</th>
+    <th>Amount</th>
+    <th>Edit</th>
+    <th>Mark Paid</th>
+</tr>
+
+{% for p in unpaid_penalties %}
+<tr>
+    <td>{{ p.get_penalty_type_display }}</td>
+    <td>
+        {% if p.attendance_record %}
+            Attendance Date: {{ p.attendance_record.date }} <br>
+            Remarks: {{ p.reason }}
+        {% elif p.review_attendance %}
+            Review: Review: {{ p.review_attendance.session.review_name }} <br>
+            Status: {{ p.review_attendance.status }} <br>
+        {% else %}
+            {{ p.reason }}
+        {% endif %}
+    </td>
+    <td>₹ {{ p.amount }}</td>
+    <td>
+        <a href="{% url 'edit_penalty' p.id %}">Edit</a>
+    </td>
+    <td>
+        <a href="{% url 'mark_paid' p.id %}">
+            Mark Paid
+        </a>
+    </td>
+</tr>
+{% empty %}
+<tr><td colspan="5">No unpaid penalties</td></tr>
+{% endfor %}
+</table>
+
+<hr>
+
+<h3>Paid History</h3>
+
+<table border="1" cellpadding="8">
+<tr>
+    <th>Type</th>
+    <th>Amount</th>
+    <th>Date</th>
+</tr>
+
+{% for p in paid_penalties %}
+<tr>
+    <td>{{ p.get_penalty_type_display }}</td>
+    <td>₹ {{ p.amount }}</td>
+    <td>{{ p.created_at }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="3">No paid penalties</td></tr>
+{% endfor %}
+</table>
+
+{% endblock %}

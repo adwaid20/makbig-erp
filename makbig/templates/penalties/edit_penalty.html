@@ -1,0 +1,19 @@
+{% extends "layouts/staff_layout.html" %}
+{% block content %}
+
+<h2>Edit Penalty</h2>
+
+<p>Student: {{ penalty.student.user.email }}</p>
+<p>Type: {{ penalty.get_penalty_type_display }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>
+
+<a href="{% url 'student_detail' penalty.student.id %}">
+    Back
+</a>
+
+{% endblock %}

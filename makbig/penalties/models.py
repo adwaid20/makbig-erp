@@ -21,7 +21,6 @@ class Penalty(models.Model):
 
     penalty_type = models.CharField(max_length=20,choices=PENALTY_TYPE_CHOICES)
 
-    amount = models.DecimalField(max_digits=8,decimal_places=2)
 
     reason = models.TextField(blank=True)
 
