@@ -20,6 +20,8 @@ from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
+from django_ratelimit.decorators import ratelimit
+
 
 from penalties.models import Penalty
 from .forms import StaffLoginForm,StudentLoginForm,AddStudentForm
@@ -39,6 +41,7 @@ def is_student_user(user):
 
 
 @never_cache
+@ratelimit(key='ip', rate='5/m', block=True)
 def staff_login(request):
     if request.method=='POST':
         form=StaffLoginForm(request.POST)
@@ -86,6 +89,7 @@ def staff_logout(request):
 
 
 @never_cache
+@ratelimit(key='ip', rate='5/m', block=True)
 def student_login(request):
     form=StudentLoginForm(request.POST or None)
 
@@ -106,7 +110,7 @@ def student_login(request):
 
 
 # @never_cache
-# @login_required
+@login_required(login_url='student_login')
 @user_passes_test(is_student_user)
 def student_dashboard(request):
     student = get_object_or_404(StudentProfile,user=request.user)
@@ -154,7 +158,7 @@ def staff_students(request):
     page_obj=paginator.get_page(page_number)
     context={
             'page_obj':page_obj,
-            'students':students,
+            # 'students':students,
             'courses':courses,
             'selected_course':course_id,
         }
@@ -167,11 +171,12 @@ def staff_students(request):
 @login_required
 @user_passes_test(is_admin_user)
 def delete_student(request, student_id):
-    if not request.user.is_staff:
-        return redirect('home')
 
     student = get_object_or_404(StudentProfile, id=student_id)
 
+    if student.user == request.user:
+        messages.error(request, "You cannot delete yourself.")
+        return redirect('staff_students')
     # delete linked user also
     student.user.delete()
 
@@ -190,11 +195,12 @@ def student_logout(request):
     return redirect('home')
 
 
+@ratelimit(key='ip', rate='3/m', block=True)
 def student_forget_password(request):
     if request.method =='POST':
         email=request.POST.get("email")
 
-        user=User.objects.filter(email=email,is_student=True,is_active=True).first() 
+        user=User.objects.filter(email__iexact=email,is_student=True,is_active=True).first() 
 
         if not user:
             messages.error(request,"No student found with this email")

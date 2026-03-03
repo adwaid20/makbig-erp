@@ -36,7 +36,9 @@
     --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   }
 
-
+.styled-table {
+  table-layout: fixed;
+}
   /* ---- Remove number input spinners ---- */
 
 /* Chrome, Edge, Safari */
@@ -218,15 +220,27 @@ input[type="number"] {
 
   /* --- Radio Inputs as Pills --- */
   .status-pills {
-    display: flex;
-    gap: 0.5rem;
-    background: #f8fafc;
-    padding: 4px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    width: fit-content;
-  }
-
+  display: flex;
+  gap: 0.4rem;
+  background: #f8fafc;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  width: 100%;          /* ✅ */
+  justify-content: center;
+}
+.student-name {
+  font-weight: 600;
+  color: var(--slate-800);
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.status-pills {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
   .status-radio-label {
     cursor: pointer;
     position: relative;
@@ -511,9 +525,9 @@ input[type="number"] {
           <thead>
             <tr>
               <th width="25%">Student</th>
-              <th width="15%">Status</th>
-              <th width="30%">Remark</th>
-              <th width="30%">Fine (₹)</th>
+              <th width="25%">Status</th>
+              <th width="25%">Remark</th>
+              <th width="25%">Fine (₹)</th>
             </tr>
           </thead>
           <tbody>
@@ -522,8 +536,9 @@ input[type="number"] {
             {% with fine=existing_fines|get_item:student.id %}
             <tr>
               <td>
-                <div class="student-name">{{ student.user.first_name }}</div>
-                <!-- Optional Subtext if we had ID -->
+<div class="student-name text-truncate">
+  {{ student.user.first_name }} {{ student.user.last_name }}
+</div>                <!-- Optional Subtext if we had ID -->
                 <!-- <div class="student-meta">ID: {{ student.id }}</div> -->
               </td>
 

@@ -2,17 +2,33 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Sum
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator,MinValueValidator,MaxValueValidator
+from decimal import Decimal
+
+
+
 # Create your models here.
+
+name_validator=RegexValidator(regex=r'^[A-Za-z]+$', message="Only alphabetic characters are allowed.")
+
+mobile_validator=RegexValidator(regex=r'^\d{10}$', message="Mobile number must contain only digits and must havee 10 digits")
+
+
+
 class User(AbstractUser):
     email=models.EmailField(unique=True,db_index=True)
-    mobile_number = models.CharField(max_length=15, blank=True, null=True)
+    mobile_number = models.CharField(max_length=15, blank=True, null=True,validators=[mobile_validator])
     is_student=models.BooleanField(default=False)
+    first_name = models.CharField(max_length=100,validators=[name_validator])
+    last_name = models.CharField(max_length=100,validators=[name_validator])
 
     def clean(self):
         if self.is_student and self.is_staff:
             raise ValidationError("User cannot be both student and staff.")
 
+    def save(self,*args, **kwargs):
+        self.email=self.email.lower().strip()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.email
@@ -20,24 +36,25 @@ class User(AbstractUser):
 
 class Course(models.Model):
     name=models.CharField(max_length=200)
-    description=models.TextField(blank=True,null=True)
-    duration_months=models.IntegerField(default=6)
+    description=models.TextField(blank=True,null=True, max_length=2000)
+    duration_months=models.PositiveIntegerField(default=6,validators=[MinValueValidator(1),MaxValueValidator(60)])
 
     def __str__(self):
         return self.name
     
+
 class StudentProfile(models.Model):
     user=models.OneToOneField(User, on_delete=models.CASCADE)
     course=models.ForeignKey(Course,on_delete=models.PROTECT)
     enrollment_date=models.DateField(auto_now_add=True)
-    progress_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    progress_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0,validators=[MinValueValidator(Decimal('0.00')),MaxValueValidator(Decimal('100.00'))])
 
 
     def __str__(self):
         return self.user.email
 
     def total_fine(self):
-        return self.penalties.aggregate(total=Sum('amount'))['total'] or 0
+        return self.penalties.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
 
 
     
