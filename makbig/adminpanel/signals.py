@@ -17,7 +17,7 @@ def assign_works_on_student_creation(sender, instance, created, **kwargs):
     def assign_works():
         works=WorkType.objects.filter(course=instance.course,is_active=True)
         
-        assignments=[WorkAssignment(student=instance,workType=work)
+        assignments=[WorkAssignment(student=instance,work_type=work)
                      for work in works ]
         
         WorkAssignment.objects.bulk_create(assignments)
