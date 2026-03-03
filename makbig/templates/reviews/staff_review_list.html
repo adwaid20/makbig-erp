@@ -67,7 +67,7 @@
                             style="width: 42px; height: 42px;">
                             {{ student.user.first_name|first|default:"U"|upper}}{{student.user.last_name|first|default:""|upper }}
                         </div>
-                        <div class="min-w-0">
+                        <div class="fw-semibold text-dark text-truncate w-100">
                             <h6 class="mb-0 fw-bold text-dark text-truncate">{{ student.user.first_name }}{{student.user.last_name}}</h6>
                             <div class="small text-muted text-truncate">{{student.user.email }}</div>
                         </div>
