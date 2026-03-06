@@ -2,15 +2,26 @@ import calendar
 from datetime import date, datetime
 
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,user_passes_test
 from django.db.models import Count,Sum
 
 from adminpanel.models import StudentProfile,Course
 from .models import AttendanceRecord
 from penalties.models import Penalty
+from django.shortcuts import get_object_or_404
 
 
-@login_required(login_url='/login/')
+
+
+def is_admin_user(user):
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
+
+def is_student_user(user):
+    return user.is_authenticated and user.is_student
+
+
+@login_required
+@user_passes_test(is_admin_user,login_url='staff_login')
 def attendance_session(request):
 
     selected_course = request.GET.get("course")
@@ -42,8 +53,7 @@ def attendance_session(request):
     #load existing attendance
     existing_attendance = {
         record.student_id: record
-        for record in AttendanceRecord.objects.filter(date=selected_date)
-    }
+        for record in AttendanceRecord.objects.filter(date=selected_date,student__in=students)}
 
     
     #load any existing fines
@@ -84,8 +94,23 @@ def attendance_session(request):
     if request.method == 'POST' and request.POST.get('action') == 'save_attendance':
         for student in students:
             status = request.POST.get(f'status_{student.id}')
-            fine_amount = request.POST.get(f'fine_{student.id}')
+            fine_input = request.POST.get(f'fine_{student.id}')
             remark = request.POST.get(f'remark_{student.id}', '').strip()
+
+            fine_amount=None
+
+            if  fine_input:
+                try:
+                    fine_amount=float(fine_input)
+
+                    if fine_amount<0:
+                        fine_amount=None
+                    
+                    if fine_amount>10000:
+                        fine_amount=10000
+
+                except (ValueError,TypeError):
+                    fine_amount=None
 
             if not status:
                 continue
@@ -131,7 +156,7 @@ def attendance_session(request):
 
 
 def student_attendance(request):
-    student = StudentProfile.objects.get(user=request.user)
+    student = get_object_or_404(StudentProfile,user=request.user)
 
     # Attendance records
     records = AttendanceRecord.objects.filter(
