@@ -3,10 +3,9 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from .models import StudentProfile,Course
-from django.utils.crypto import get_random_string
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
-from .servives import create_student
+from .services import create_student
 from django.core.paginator import Paginator
 from django.utils.http import urlsafe_base64_encode,urlsafe_base64_decode
 from django.utils.encoding import force_bytes,force_str
@@ -22,10 +21,9 @@ from django.core.exceptions import ValidationError
 
 from django_ratelimit.decorators import ratelimit
 
-
+from .services import DashboardService
 from penalties.models import Penalty
 from .forms import StaffLoginForm,StudentLoginForm,AddStudentForm
-
 
 
 
@@ -74,8 +72,9 @@ def staff_login(request):
 @login_required
 @user_passes_test(is_admin_user,login_url='staff_login')
 def staff_dashboard(request):
-    return render(request,'adminpanel/staff_dashboard.html')
-
+    dashboard = DashboardService.get_dashboard_summary()
+    return render(request,'adminpanel/staff_dashboard.html',dashboard)
+#context dict ayitt thanne pass akune
 
 def home(request):
     return render(request,'adminpanel/home.html')
@@ -284,3 +283,7 @@ def student_profile(request):
         messages.error(request,"Student profile not found")
         return redirect("student_dashboard")
     return render(request, "adminpanel/student_profile.html", {"student": student})
+
+
+def get_started(request):
+    return render(request,'adminpanel/get_started.html')

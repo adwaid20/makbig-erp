@@ -16,25 +16,15 @@ class Penalty(models.Model):
         ('review', 'Review Related'),
         ('other', 'Other'),
     ]
-
     student = models.ForeignKey(StudentProfile,on_delete=models.CASCADE,related_name='penalties')
-
     penalty_type = models.CharField(max_length=20,choices=PENALTY_TYPE_CHOICES)
-
-
     reason = models.TextField(blank=True)
-
     # Optional links (VERY IMPORTANT)
     review_attendance = models.ForeignKey('reviews.ReviewAttendance',on_delete=models.SET_NULL,null=True,blank=True)
-
     attendance_record = models.ForeignKey(AttendanceRecord,on_delete=models.SET_NULL,null=True,blank=True,related_name='penalties')
-
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
-
     is_paid = models.BooleanField(default=False)
-
     amount = models.DecimalField(
         max_digits=8,
         decimal_places=2,
