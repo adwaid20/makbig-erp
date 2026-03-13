@@ -74,7 +74,7 @@ def staff_login(request):
 def staff_dashboard(request):
     dashboard = DashboardService.get_dashboard_summary()
     return render(request,'adminpanel/staff_dashboard.html',dashboard)
-#context dict ayitt thanne pass akune
+#context dict ayitt thanne pass akune, services nokiya mathi
 
 def home(request):
     return render(request,'adminpanel/home.html')
@@ -100,12 +100,20 @@ def student_login(request):
             user=authenticate(request, username=email , password=password )
 
             if user is not None and user.is_student:
+                student = StudentProfile.objects.filter(user=user).first()
+                if not student or not student.is_active:
+                    messages.error(request, "Your account has been deactivated.")
+                    return redirect("student_login")
                 login(request,user)
                 return redirect('student_dashboard')
             else:
                 messages.error(request,"Invalid email or password")
 
     return render(request,'adminpanel/student_login.html',{'form':form})
+
+
+
+
 
 
 # @never_cache
@@ -139,6 +147,19 @@ def add_student(request):
     
     return render(request,'adminpanel/add_student.html', {'form':form})
 
+
+@require_POST
+@login_required
+@user_passes_test(is_admin_user)
+def toggle_student_status(request, student_id):
+    student = get_object_or_404(StudentProfile, id=student_id)
+    student.is_active = not student.is_active
+    student.save(update_fields=["is_active"])
+    if student.is_active:
+        messages.success(request, "Student activated successfully.")
+    else:
+        messages.success(request, "Student deactivated successfully.")
+    return redirect("staff_students")
 
 @never_cache
 @login_required

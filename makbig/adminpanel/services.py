@@ -6,10 +6,11 @@ from django.conf import settings
 from datetime import timedelta
 from attendance.models import AttendanceRecord
 from reviews.models import ReviewAttendance
-from works.models import WorkAssignment
+from works.models import WorkSubmission
 from penalties.models import Penalty
 from django.db.models import Sum
 from django.utils import timezone
+
 
 
 
@@ -89,12 +90,11 @@ class DashboardService:
 
     @staticmethod
     def pending_works():
-        return WorkAssignment.objects.filter(status='pending').count()
+        return WorkSubmission.objects.filter(status='pending').count()
 
     @staticmethod
     def unpaid_fines():
-        fines = Penalty.objects.filter(status='unpaid').aggregate(total=Sum('amount'))
-
+        fines = Penalty.objects.filter(is_paid=False).aggregate(total=Sum('amount'))
         return fines['total'] or 0
     
     @classmethod

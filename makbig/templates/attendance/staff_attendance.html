@@ -5,646 +5,836 @@
 {% block page_title %}Attendance Session{% endblock %}
 
 {% block content %}
-
 <style>
-  :root {
-    /* Academic Palette: Teal & Slate */
-    --primary-color: #0f766e;
-    /* Teal 700 */
-    --primary-light: #f0fdfa;
-    /* Teal 50 */
-    --primary-hover: #115e59;
-    /* Teal 800 */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-    --slate-800: #1e293b;
-    --slate-600: #475569;
-    --slate-400: #94a3b8;
-    --slate-100: #f1f5f9;
+:root {
+  --pri:       #0f766e;
+  --pri-dk:    #115e59;
+  --pri-bg:    #f0fdfa;
+  --pri-ring:  rgba(15,118,110,.12);
 
-    --success-bg: #dcfce7;
-    --success-text: #166534;
-    --success-border: #86efac;
+  --ink:       #0f172a;
+  --ink-2:     #334155;
+  --ink-3:     #64748b;
+  --ink-4:     #94a3b8;
 
-    --warning-bg: #fef9c3;
-    --warning-text: #854d0e;
-    --warning-border: #fde047;
+  --line:      #e2e8f0;
+  --bg:        #f8fafc;
+  --white:     #ffffff;
 
-    --danger-bg: #fee2e2;
-    --danger-text: #991b1b;
-    --danger-border: #fca5a5;
+  --ok-bg:     #f0fdf4;
+  --ok-tx:     #15803d;
+  --ok-bd:     #86efac;
+  --ok-dk:     #166534;
 
-    --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  }
+  --warn-bg:   #fffbeb;
+  --warn-tx:   #92400e;
+  --warn-bd:   #fcd34d;
+  --warn-dk:   #d97706;
 
-.styled-table {
+  --err-bg:    #fff1f2;
+  --err-tx:    #9f1239;
+  --err-bd:    #fda4af;
+  --err-dk:    #be123c;
+
+  --r:    8px;
+  --r-lg: 14px;
+  --s1:   0 1px 2px rgba(0,0,0,.06);
+  --s2:   0 4px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
+  --s3:   0 10px 28px rgba(0,0,0,.1), 0 2px 6px rgba(0,0,0,.06);
+}
+
+/* ══════════════════════════════════════
+   MESSAGES / TOASTS
+══════════════════════════════════════ */
+.msg-stack {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin-bottom: 1.25rem;
+}
+
+.msg-toast {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .75rem 1rem;
+  border-radius: var(--r);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: .845rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  animation: slideDown .2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.msg-toast.error   { background: var(--err-bg);  color: var(--err-tx);  border-color: var(--err-bd); }
+.msg-toast.success { background: var(--ok-bg);   color: var(--ok-tx);   border-color: var(--ok-bd); }
+.msg-toast.warning { background: var(--warn-bg); color: var(--warn-tx); border-color: var(--warn-bd); }
+.msg-toast.info    { background: #eff6ff;        color: #1d4ed8;        border-color: #93c5fd; }
+
+.msg-icon { font-size: .9rem; flex-shrink: 0; }
+.msg-text { flex: 1; line-height: 1.4; }
+
+.msg-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 .1rem;
+  opacity: .45;
+  color: inherit;
+  transition: opacity .15s;
+  flex-shrink: 0;
+}
+.msg-close:hover { opacity: .9; }
+
+/* ── reset ── */
+.aw *, .aw *::before, .aw *::after { box-sizing: border-box; }
+.aw {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* spinner removal */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+/* ══════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════ */
+.aw-grid {
+  display: grid;
+  grid-template-columns: 1fr 284px;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 1080px) {
+  .aw-grid { grid-template-columns: 1fr; }
+}
+
+/* ══════════════════════════════════════
+   TOOLBAR
+══════════════════════════════════════ */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+
+.toolbar-left h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: -.02em;
+}
+.toolbar-left .date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--ink-3);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: .15rem .65rem;
+  margin-top: .3rem;
+}
+.toolbar-left .date-badge i { color: var(--pri); font-size: .7rem; }
+
+.filter-wrap {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: .3rem .4rem .3rem .75rem;
+  box-shadow: var(--s1);
+  transition: border-color .15s, box-shadow .15s;
+}
+.filter-wrap:focus-within {
+  border-color: var(--pri);
+  box-shadow: 0 0 0 3px var(--pri-ring);
+}
+.filter-wrap i { color: var(--ink-4); font-size: .75rem; }
+.filter-wrap select {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  outline: none;
+  padding-right: .25rem;
+}
+
+/* ══════════════════════════════════════
+   STAT TILES
+══════════════════════════════════════ */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .85rem;
+  margin-bottom: 1.25rem;
+}
+
+.stat-tile {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  box-shadow: var(--s1);
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+}
+.stat-tile:hover { transform: translateY(-2px); box-shadow: var(--s2); }
+
+.stat-tile::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+}
+.stat-tile.ok::before  { background: var(--ok-dk); }
+.stat-tile.ab::before  { background: var(--err-dk); }
+.stat-tile.lt::before  { background: var(--warn-dk); }
+
+.stat-icon {
+  width: 38px; height: 38px;
+  border-radius: var(--r);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .95rem;
+  flex-shrink: 0;
+}
+.stat-tile.ok .stat-icon  { background: var(--ok-bg);   color: var(--ok-dk); }
+.stat-tile.ab .stat-icon  { background: var(--err-bg);  color: var(--err-dk); }
+.stat-tile.lt .stat-icon  { background: var(--warn-bg); color: var(--warn-dk); }
+
+.stat-num {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+.stat-tile.ok .stat-num  { color: var(--ok-dk); }
+.stat-tile.ab .stat-num  { color: var(--err-dk); }
+.stat-tile.lt .stat-num  { color: var(--warn-dk); }
+
+.stat-lbl {
+  font-size: .67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-4);
+  margin-top: .1rem;
+}
+
+/* ══════════════════════════════════════
+   TABLE CARD
+══════════════════════════════════════ */
+.tcard {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--s2);
+  overflow: hidden;
+}
+
+.tcard-head {
+  padding: .8rem 1.2rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--ink-3);
+}
+.tcard-head i { color: var(--pri); }
+
+.tscroll { overflow-x: auto; }
+
+.att-tbl {
+  width: 100%;
+  border-collapse: collapse;
   table-layout: fixed;
 }
-  /* ---- Remove number input spinners ---- */
 
-/* Chrome, Edge, Safari */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+.att-tbl colgroup col:nth-child(1) { width: 26%; }
+.att-tbl colgroup col:nth-child(2) { width: 22%; }
+.att-tbl colgroup col:nth-child(3) { width: 36%; }
+.att-tbl colgroup col:nth-child(4) { width: 16%; }
 
-/* Firefox */
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-
-
-  /* --- Layout & Typography --- */
-  .attendance-wrapper {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 2rem;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: var(--slate-800);
-    align-items: start;
-  }
-
-  @media (max-width: 1024px) {
-    .attendance-wrapper {
-      grid-template-columns: 1fr;
-    }
-
-    .right-sidebar {
-      order: 1;
-      /* Keep sidebar below content on mobile */
-    }
-  }
-
-  h4 {
-    font-weight: 700;
-    color: var(--slate-800);
-    margin-bottom: 1rem;
-    letter-spacing: -0.025em;
-  }
-
-  /* --- Cards & Containers --- */
-  .modern-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    border: 1px solid #e2e8f0;
-    overflow: hidden;
-  }
-
-  .card-header-styled {
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 1rem 1.5rem;
-    font-weight: 600;
-    color: var(--slate-600);
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  /* --- Summary Section --- */
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .stat-card {
-    background: white;
-    padding: 1.25rem;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #e2e8f0;
-    transition: transform 0.2s;
-  }
-
-  .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--card-shadow);
-  }
-
-  .stat-value {
-    font-size: 2rem;
-    font-weight: 800;
-    line-height: 1;
-    margin-bottom: 0.25rem;
-  }
-
-  .stat-label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 600;
-    color: var(--slate-600);
-  }
-
-  .stat-card.present .stat-value {
-    color: var(--success-text);
-  }
-
-  .stat-card.present {
-    border-bottom: 4px solid var(--success-border);
-    background: linear-gradient(to bottom, white, #f0fdf4);
-  }
-
-  .stat-card.absent .stat-value {
-    color: var(--danger-text);
-  }
-
-  .stat-card.absent {
-    border-bottom: 4px solid var(--danger-border);
-    background: linear-gradient(to bottom, white, #fef2f2);
-  }
-
-  .stat-card.late .stat-value {
-    color: var(--warning-text);
-  }
-
-  .stat-card.late {
-    border-bottom: 4px solid var(--warning-border);
-    background: linear-gradient(to bottom, white, #fffbeb);
-  }
-
-
-  /* --- Attendance Form Table --- */
-  .attendance-table-wrapper {
-    background: white;
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    border: 1px solid #e2e8f0;
-    padding: 1.5rem;
-  }
-
-  .styled-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-  }
-
-  .styled-table th {
-    text-align: left;
-    padding: 1rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--slate-600);
-    border-bottom: 2px solid #e2e8f0;
-    letter-spacing: 0.05em;
-  }
-
-  .styled-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
-  }
-
-  .styled-table tr:last-child td {
-    border-bottom: none;
-  }
-
-  .student-name {
-    font-weight: 600;
-    color: var(--slate-800);
-    font-size: 0.95rem;
-  }
-
-  .student-meta {
-    font-size: 0.75rem;
-    color: #94a3b8;
-  }
-
-  /* --- Radio Inputs as Pills --- */
-  .status-pills {
-  display: flex;
-  gap: 0.4rem;
-  background: #f8fafc;
-  padding: 4px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  width: 100%;          /* ✅ */
-  justify-content: center;
-}
-.student-name {
-  font-weight: 600;
-  color: var(--slate-800);
-  font-size: 0.95rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.att-tbl thead th {
+  padding: .65rem 1rem;
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-4);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  text-align: left;
   white-space: nowrap;
 }
-.status-pills {
-  flex-wrap: nowrap;
-  overflow: hidden;
+.att-tbl thead th:last-child { text-align: right; }
+
+.att-tbl tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background .1s;
 }
-  .status-radio-label {
-    cursor: pointer;
-    position: relative;
-    padding: 6px 16px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--slate-600);
-    transition: all 0.2s ease;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.att-tbl tbody tr:last-child { border-bottom: none; }
+.att-tbl tbody tr:hover { background: #fafbff; }
 
-  .status-radio-label input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
+.att-tbl td {
+  padding: .7rem 1rem;
+  vertical-align: middle;
+}
 
-  /* Visual Checked State Logic via :has (modern) or adjacent sibling if needed. 
-     Using :has for best results, fallback to direct input styling if strict support needed.
-     Given "Modern" requirement, I'll use :has or a solid CSS classes approach if I could manipulate JS, 
-     but since NO JS logic changes:
-     I will use the `input:checked + span` technique for robust compatibility.
-  */
+.s-name {
+  font-weight: 600;
+  font-size: .875rem;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
 
-  /* Reset label style for this technique */
-  .status-radio-label {
-    padding: 0;
-    /* Removing padding from label to put it on span */
-    border: none;
-    background: transparent;
-  }
+/* ── STATUS PILLS ──
+   input BEFORE label in DOM — sibling ~ selector works correctly
+── */
+.pills {
+  display: inline-flex;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 3px;
+  gap: 2px;
+  width: 100%;
+}
 
-  .status-radio-label span {
-    display: block;
-    /* Make span behave like the button */
-    padding: 6px 14px;
-    border-radius: 6px;
-    background: transparent;
-    transition: all 0.2s;
-  }
+.pill-opt {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
 
-  .status-radio-label:hover span {
-    background: rgba(0, 0, 0, 0.03);
-  }
+.pill-opt input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0; height: 0;
+  pointer-events: none;
+}
 
-  /* Checked States */
-  .status-radio-label input[value="P"]:checked+span {
-    background: var(--success-text);
-    color: white;
-    box-shadow: 0 2px 4px rgba(22, 101, 52, 0.2);
-  }
+.pill-opt label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  width: 100%;
+  border-radius: 5px;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  cursor: pointer;
+  color: var(--ink-3);
+  transition: background .15s, color .15s, box-shadow .15s;
+  user-select: none;
+}
+.pill-opt label:hover { background: rgba(0,0,0,.05); color: var(--ink); }
 
-  .status-radio-label input[value="L"]:checked+span {
-    background: var(--warning-text);
-    color: white;
-    box-shadow: 0 2px 4px rgba(133, 77, 14, 0.2);
-  }
+.pill-opt input[value="P"]:checked ~ label {
+  background: var(--ok-dk);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(22,101,52,.25);
+}
+.pill-opt input[value="L"]:checked ~ label {
+  background: var(--warn-dk);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(217,119,6,.25);
+}
+.pill-opt input[value="A"]:checked ~ label {
+  background: var(--err-dk);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(190,18,60,.25);
+}
 
-  .status-radio-label input[value="A"]:checked+span {
-    background: var(--danger-text);
-    color: white;
-    box-shadow: 0 2px 4px rgba(153, 27, 27, 0.2);
-  }
+/* ── INPUTS ── */
+.fi {
+  width: 100%;
+  padding: .42rem .65rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  font-family: inherit;
+  font-size: .825rem;
+  color: var(--ink);
+  background: var(--white);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.fi::placeholder { color: var(--ink-4); }
+.fi:focus {
+  border-color: var(--pri);
+  box-shadow: 0 0 0 3px var(--pri-ring);
+}
+.fi-num { text-align: right; font-variant-numeric: tabular-nums; }
 
-  /* --- Inputs --- */
-  .form-control-clean {
-    width: 100%;
-    padding: 0.6rem 0.8rem;
-    border: 1px solid #cbd5e1;
-    /* Slate 300 */
-    border-radius: 8px;
-    font-size: 0.9rem;
-    color: var(--slate-800);
-    transition: all 0.2s;
-    background: #fff;
-  }
+/* ── SAVE ROW ── */
+.save-row {
+  padding: .9rem 1.2rem;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: flex-end;
+}
 
-  .form-control-clean:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
-    /* Teal focus ring */
-  }
+.btn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  background: var(--pri);
+  color: #fff;
+  border: none;
+  padding: .55rem 1.4rem;
+  border-radius: var(--r);
+  font-family: inherit;
+  font-size: .825rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(15,118,110,.3), 0 4px 10px rgba(15,118,110,.18);
+  transition: background .15s, transform .15s, box-shadow .15s;
+  letter-spacing: .01em;
+}
+.btn-save:hover {
+  background: var(--pri-dk);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(15,118,110,.3), 0 8px 18px rgba(15,118,110,.2);
+}
+.btn-save:active { transform: none; }
 
-  /* --- Primary Button --- */
-  .btn-save {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.8rem 2.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    box-shadow: 0 4px 6px -1px rgba(15, 118, 110, 0.3);
-    transition: all 0.2s;
-    margin-top: 1.5rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+/* ── EMPTY STATE ── */
+.empty-row td {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--ink-4);
+}
+.empty-row i { font-size: 1.8rem; display: block; margin-bottom: .6rem; opacity: .35; }
+.empty-row p { margin: 0; font-size: .85rem; }
 
-  .btn-save:hover {
-    background: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 8px -1px rgba(15, 118, 110, 0.4);
-  }
+/* ══════════════════════════════════════
+   CALENDAR
+══════════════════════════════════════ */
+.cal-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--s2);
+  overflow: hidden;
+  position: sticky;
+  top: 5.5rem;
+}
 
-  /* --- Calendar (High Priority) --- */
-  .calendar-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    border: 1px solid #e2e8f0;
-    padding: 1.5rem;
-    position: sticky;
-    top: 6rem;
-    /* Sticky sidebar */
-  }
+.cal-head {
+  background: var(--pri);
+  color: #fff;
+  text-align: center;
+  font-size: .9rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  padding: .8rem 1rem;
+}
 
-  .calendar-header {
-    text-align: center;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: var(--slate-800);
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #f1f5f9;
-  }
+.cal-body { padding: .9rem; }
 
-  .calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-  }
+/* one unified 7-col grid — DOW headers + day cells together */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
 
-  .cal-day-name {
-    text-align: center;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #94a3b8;
-    margin-bottom: 0.5rem;
-  }
+.cal-day-name {
+  text-align: center;
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--ink-4);
+  padding: .2rem 0 .55rem;
+}
 
-  .cal-day {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--slate-600);
-    position: relative;
-    transition: all 0.2s;
-    background: #f8fafc;
-    border: 1px solid transparent;
-  }
+.cal-day {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: .78rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  position: relative;
+  transition: background .12s, transform .12s;
+  background: var(--bg);
+  border: 1.5px solid transparent;
+}
 
-  .cal-day:hover {
-    background: #e2e8f0;
-    color: var(--slate-800);
-    transform: scale(1.05);
-    z-index: 2;
-  }
+a.cal-day:hover {
+  background: #e2e8f0;
+  color: var(--ink);
+  transform: scale(1.1);
+  z-index: 2;
+}
 
-  /* Empty/Muted Days */
-  .cal-day.muted {
-    background: transparent;
-    cursor: default;
-  }
+.cal-day.muted {
+  background: transparent;
+  border-color: transparent;
+  pointer-events: none;
+  color: transparent;
+}
 
-  .cal-day.muted:hover {
-    background: transparent;
-    transform: none;
-  }
+.cal-day.selected {
+  border-color: var(--pri);
+  background: var(--pri-bg);
+  color: var(--pri);
+  font-weight: 800;
+  box-shadow: 0 0 0 3px var(--pri-ring);
+}
 
-  /* Active/Selected Day */
-  .cal-day.selected {
-    border: 2px solid var(--primary-color);
-    background: white;
-    color: var(--primary-color);
-    font-weight: 800;
-    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1);
-  }
+.cal-day.has-attendance {
+  background: var(--ok-bg);
+  color: var(--ok-dk);
+  font-weight: 700;
+  border-color: var(--ok-bd);
+}
 
-  /* Days with Attendance (The Indicator) */
-  .cal-day.has-attendance {
-    background: var(--success-bg);
-    color: var(--success-text);
-    font-weight: 700;
-    border: 1px solid var(--success-border);
-  }
+a.cal-day.has-attendance:hover { background: #dcfce7; }
 
-  /* Badge indicator inside day if needed, but background implies coverage */
-  .status-indicator {
-    position: absolute;
-    bottom: 4px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.7;
-  }
+.cal-day.selected.has-attendance {
+  background: var(--pri-bg);
+  border-color: var(--pri);
+  color: var(--pri);
+  box-shadow: 0 0 0 3px var(--pri-ring);
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 3px;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .7;
+}
+
+/* legend */
+.cal-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: .65rem 1rem;
+  border-top: 1px solid var(--line);
+}
+.leg {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .65rem;
+  font-weight: 600;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.leg-dot {
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  border: 1.5px solid;
+}
+.leg-dot.marked   { background: var(--ok-bg);   border-color: var(--ok-bd); }
+.leg-dot.selected { background: var(--pri-bg);  border-color: var(--pri); }
+.leg-dot.empty    { background: var(--bg);      border-color: var(--line); }
 </style>
 
-<!-- Main Wrapper -->
-<div class="attendance-wrapper">
-
-  <!-- ================= LEFT: Content ================= -->
-  <div class="attendance-main">
-    <!-- Course Filter -->
-<div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
-  <form method="get" class="d-flex align-items-center">
-
-    <!-- Preserve selected date when filtering -->
-    {% if selected_date %}
-      <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
-    {% endif %}
-
-    <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden bg-white pe-2 border"
-         style="max-width: 220px;">
-      <span class="input-group-text border-0 bg-transparent text-muted ps-3">
-        <i class="fa-solid fa-filter"></i>
-      </span>
-
-      <select
-        name="course"
-        class="form-select border-0 form-select-sm shadow-none bg-transparent fw-medium"
-        onchange="this.form.submit()"
-        style="min-width: 140px; cursor: pointer;">
-
-        <option value="">All Courses</option>
-        {% for course in courses %}
-          <option value="{{ course.id }}"
-            {% if selected_course == course.id|stringformat:"s" %}selected{% endif %}>
-            {{ course.name }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-  </form>
-</div>
+<!-- ══════════ MESSAGES ══════════ -->
 
 
-    <!-- Day Summary -->
-    <div class="day-summary-section">
-      <h4>Attendance Summary <span style="font-weight: 400; color: #64748b; font-size: 0.9em;">— {{selected_date|date:"F d, Y" }}
-        
-      </span></h4>
+<div class="aw">
+<div class="aw-grid">
 
-      <div class="summary-grid">
-        <div class="stat-card present">
-          <div class="stat-value">{{ day_summary.P }}</div>
-          <div class="stat-label">Present</div>
-        </div>
-        <div class="stat-card absent">
-          <div class="stat-value">{{ day_summary.A }}</div>
-          <div class="stat-label">Absent</div>
-        </div>
-        <div class="stat-card late">
-          <div class="stat-value">{{ day_summary.L }}</div>
-          <div class="stat-label">Late</div>
+  <!-- ══════════ LEFT ══════════ -->
+  <div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <h2>Attendance Summary</h2>
+        <div class="date-badge">
+          <i class="fa-regular fa-calendar"></i>
+          {{ selected_date|date:"F d, Y" }}
         </div>
       </div>
-    </div>
 
-    <!-- Attendance Form -->
-    <div class="attendance-table-wrapper">
-      <form method="post">
-        {% csrf_token %}
-        <input type="hidden" name="selected_date" value="{{ selected_date|date:'Y-m-d' }}">
-        <input type="hidden" name="action" value="save_attendance">
-
-        <table class="styled-table">
-          <thead>
-            <tr>
-              <th width="25%">Student</th>
-              <th width="25%">Status</th>
-              <th width="25%">Remark</th>
-              <th width="25%">Fine (₹)</th>
-        
-            </tr>
-          </thead>
-          <tbody>
-            {% for student in students %}
-            {% with existing=existing_attendance|get_item:student.id %}
-            {% with fine=existing_fines|get_item:student.id %}
-            <tr>
-              <td>
-<div class="student-name text-truncate">
-  {{ student.user.first_name }} {{ student.user.last_name }}
-</div>                <!-- Optional Subtext if we had ID -->
-                <!-- <div class="student-meta">ID: {{ student.id }}</div> -->
-              </td>
-
-              <!-- STATUS PILLS -->
-              <td>
-                <div class="status-pills">
-
-                  <label class="status-radio-label">
-                    <input type="radio" name="status_{{ student.id }}" value="P" {% if existing and existing.status == 'P'%}checked{% endif %}>
-                    <span>P</span>
-                  </label>
-
-                  <label class="status-radio-label">
-                    <input type="radio" name="status_{{ student.id }}" value="L" {% if existing and existing.status == 'L'%}checked{% endif %}>
-                    <span>L</span>
-                  </label>
-
-                  <label class="status-radio-label">
-                    <input type="radio" name="status_{{ student.id }}" value="A" {% if existing and existing.status == 'A'%}checked{% endif %}>
-                    <span>A</span>
-                  </label>
-
-                </div>
-              </td>
-
-              <!-- REMARK -->
-              <td>
-                <input type="text" name="remark_{{ student.id }}" class="form-control-clean" placeholder="Add note..."
-                  value="{{ fine.reason|default_if_none:'' }}">
-              </td>
-
-              <!-- FINE -->
-              <td>
-                <input type="number" name="fine_{{ student.id }}" class="form-control-clean" placeholder="0"
-                 min="0" max="10000" inputmode="decimal" value="{{ fine.amount|default_if_none:'' }}">
-              </td>
-
-            </tr>
-            {% endwith %}
-            {% endwith %}
+      <form method="get">
+        {% if selected_date %}
+          <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+        {% endif %}
+        <div class="filter-wrap">
+          <i class="fa-solid fa-filter"></i>
+          <select name="course" onchange="this.form.submit()">
+            <option value="">All Courses</option>
+            {% for course in courses %}
+              <option value="{{ course.id }}"
+                {% if selected_course == course.id|stringformat:"s" %}selected{% endif %}>
+                {{ course.name }}
+              </option>
             {% endfor %}
-          </tbody>
-        </table>
-
-        <!-- SAVE BUTTON AREA -->
-        <div style="text-align: right;">
-          <button type="submit" class="btn-save">
-            <i class="fa-solid fa-check-circle"></i> Save Attendance
-          </button>
+          </select>
         </div>
-
       </form>
     </div>
 
-  </div>
-
-  <!-- ================= RIGHT: Calendar ================= -->
-   
-  <div class="right-sidebar">
-    <div class="calendar-card">
-      <div class="calendar-header">
-        {{ selected_date|date:"F Y" }}
+    <!-- STAT TILES -->
+    <div class="stat-row">
+      <div class="stat-tile ok">
+        <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div>
+          <div class="stat-num">{{ day_summary.P }}</div>
+          <div class="stat-lbl">Present</div>
+        </div>
       </div>
-
-      <div class="calendar-grid">
-        <div class="cal-day-name">Mon</div>
-        <div class="cal-day-name">Tue</div>
-        <div class="cal-day-name">Wed</div>
-        <div class="cal-day-name">Thu</div>
-        <div class="cal-day-name">Fri</div>
-        <div class="cal-day-name">Sat</div>
-        <div class="cal-day-name">Sun</div>
-
-        {% for week in month_days %}
-        {% for day in week %}
-        {% if day.month == selected_date.month %}
-
-        <!-- Determine Classes -->
-        <!-- We check if 'day' has attendance using the custom filter -->
-        {% with has_att=attendance_map|get_day_attendance:day %}
-
-        <a href="?date={{ day|date:'Y-m-d' }}"
-          class="cal-day {% if day == selected_date %}selected{% endif %} {% if has_att %}has-attendance{% endif %}"
-          title="{% if has_att %}Attendance Marked{% else %}No Record{% endif %}">
-
-          {{ day.day }}
-
-          <!-- If attendance exists, maybe a small checkmark icon too for extra visibility? 
-                     User asked for strong indicators. -->
-          {% if has_att %}
-          <div class="status-indicator"></div>
-          {% endif %}
-        </a>
-
-        {% endwith %}
-
-        {% else %}
-        <div class="cal-day muted"></div>
-        {% endif %}
-        {% endfor %}
-        {% endfor %}
+      <div class="stat-tile ab">
+        <div class="stat-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+        <div>
+          <div class="stat-num">{{ day_summary.A }}</div>
+          <div class="stat-lbl">Absent</div>
+        </div>
+      </div>
+      <div class="stat-tile lt">
+        <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+        <div>
+          <div class="stat-num">{{ day_summary.L }}</div>
+          <div class="stat-lbl">Late</div>
+        </div>
       </div>
     </div>
-  </div>
 
+    <!-- ATTENDANCE FORM -->
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="selected_date" value="{{ selected_date|date:'Y-m-d' }}">
+      <input type="hidden" name="action" value="save_attendance">
+
+      <div class="tcard">
+        <div class="tcard-head">
+          <i class="fa-solid fa-clipboard-list"></i>
+          Student Attendance
+        </div>
+
+        <div class="tscroll">
+          <table class="att-tbl">
+            <colgroup>
+              <col><col><col><col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Status</th>
+                <th>Remark</th>
+                <th style="text-align:right;">Fine (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for student in students %}
+              {% with existing=existing_attendance|get_item:student.id %}
+              {% with fine=existing_fines|get_item:student.id %}
+              <tr>
+                <td>
+                  <span class="s-name">
+                    {{ student.user.first_name }} {{ student.user.last_name }}
+                  </span>
+                </td>
+
+                <!-- STATUS — input before label so ~ sibling selector works -->
+                <td>
+                  <div class="pills">
+                    <div class="pill-opt">
+                      <input type="radio"
+                             id="rP_{{ student.id }}"
+                             name="status_{{ student.id }}"
+                             value="P"
+                             {% if existing and existing.status == 'P' %}checked{% endif %}>
+                      <label for="rP_{{ student.id }}">P</label>
+                    </div>
+                    <div class="pill-opt">
+                      <input type="radio"
+                             id="rL_{{ student.id }}"
+                             name="status_{{ student.id }}"
+                             value="L"
+                             {% if existing and existing.status == 'L' %}checked{% endif %}>
+                      <label for="rL_{{ student.id }}">L</label>
+                    </div>
+                    <div class="pill-opt">
+                      <input type="radio"
+                             id="rA_{{ student.id }}"
+                             name="status_{{ student.id }}"
+                             value="A"
+                             {% if existing and existing.status == 'A' %}checked{% endif %}>
+                      <label for="rA_{{ student.id }}">A</label>
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  <input type="text"
+                         name="remark_{{ student.id }}"
+                         class="fi"
+                         placeholder="Add note..."
+                         value="{{ fine.reason|default_if_none:'' }}">
+                </td>
+
+                <td>
+                  <input type="number"
+                         name="fine_{{ student.id }}"
+                         class="fi fi-num"
+                         placeholder="0"
+                         min="0" max="10000"
+                         inputmode="decimal"
+                         value="{{ fine.amount|default_if_none:'' }}">
+                </td>
+              </tr>
+              {% endwith %}
+              {% endwith %}
+              {% endfor %}
+
+              {% if not students %}
+              <tr class="empty-row">
+                <td colspan="4">
+                  <i class="fa-regular fa-folder-open"></i>
+                  <p>No students found for this selection.</p>
+                </td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="save-row">
+          <button type="submit" class="btn-save">
+            <i class="fa-solid fa-floppy-disk"></i>
+            Save Attendance
+          </button>
+        </div>
+      </div>
+    </form>
+
+  </div><!-- /left -->
+{% if messages %}
+  {% for message in messages %}
+    <div style="
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      min-width: 320px;
+      max-width: 560px;
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      padding: .75rem 1rem;
+      border-radius: 8px;
+      font-size: .85rem;
+      font-weight: 500;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      {% if 'error' in message.tags %}
+        background: #fff1f2; color: #9f1239; border: 1px solid #fda4af;
+      {% elif 'success' in message.tags %}
+        background: #f0fdf4; color: #15803d; border: 1px solid #86efac;
+      {% elif 'warning' in message.tags %}
+        background: #fffbeb; color: #92400e; border: 1px solid #fcd34d;
+      {% else %}
+        background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd;
+      {% endif %}
+    " id="layout-msg-{{ forloop.counter }}">
+      <span style="flex:1">{{ message }}</span>
+      <button onclick="document.getElementById('layout-msg-{{ forloop.counter }}').remove()"
+              style="background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:.5;padding:0;color:inherit;">&times;</button>
+    </div>
+  {% endfor %}
+{% endif %}
+  <!-- ══════════ RIGHT — CALENDAR ══════════ -->
+  <div>
+    <div class="cal-card">
+      <div class="cal-head">{{ selected_date|date:"F Y" }}</div>
+
+      <div class="cal-body">
+        <!-- Single unified grid: DOW labels + day cells -->
+        <div class="calendar-grid">
+
+          <div class="cal-day-name">Mon</div>
+          <div class="cal-day-name">Tue</div>
+          <div class="cal-day-name">Wed</div>
+          <div class="cal-day-name">Thu</div>
+          <div class="cal-day-name">Fri</div>
+          <div class="cal-day-name">Sat</div>
+          <div class="cal-day-name">Sun</div>
+
+          {% for week in month_days %}
+          {% for day in week %}
+          {% if day.month == selected_date.month %}
+
+          {% with has_att=attendance_map|get_day_attendance:day %}
+          <a href="?date={{ day|date:'Y-m-d' }}"
+             class="cal-day {% if day == selected_date %}selected{% endif %} {% if has_att %}has-attendance{% endif %}"
+             title="{% if has_att %}Attendance Marked{% else %}No Record{% endif %}">
+            {{ day.day }}
+            {% if has_att %}<div class="status-indicator"></div>{% endif %}
+          </a>
+          {% endwith %}
+
+          {% else %}
+          <div class="cal-day muted"></div>
+          {% endif %}
+          {% endfor %}
+          {% endfor %}
+
+        </div>
+      </div>
+
+      <div class="cal-legend">
+        <div class="leg"><div class="leg-dot marked"></div> Marked</div>
+        <div class="leg"><div class="leg-dot selected"></div> Selected</div>
+        <div class="leg"><div class="leg-dot empty"></div> Empty</div>
+      </div>
+    </div>
+  </div><!-- /right -->
+
+</div>
 </div>
 
 {% endblock %}

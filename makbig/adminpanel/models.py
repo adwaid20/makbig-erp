@@ -46,6 +46,7 @@ class Course(models.Model):
 class StudentProfile(models.Model):
     user=models.OneToOneField(User, on_delete=models.CASCADE)
     course=models.ForeignKey(Course,on_delete=models.PROTECT)
+    is_active = models.BooleanField(default=True)
     enrollment_date=models.DateField(auto_now_add=True)
     progress_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0,validators=[MinValueValidator(Decimal('0.00')),MaxValueValidator(Decimal('100.00'))])
 

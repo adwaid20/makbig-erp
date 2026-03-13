@@ -17,5 +17,6 @@ urlpatterns = [
     path('student/forgot-password/', views.student_forget_password, name='student_forgot_password'),
     path('student/reset/<uidb64>/<str:token>/', views.student_reset_password, name='student_reset_password'),
     path("student/profile/", views.student_profile, name="student_profile"),
+    path("students/<int:student_id>/toggle-status/",views.toggle_student_status,name="toggle_student_status")
 ]
 
