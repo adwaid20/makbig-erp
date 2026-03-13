@@ -16,9 +16,8 @@ def get_item(dictionary, key):
 
 @register.filter
 def get_day_attendance(attendance_map, day):
-    """
-    Returns attendance records for a given day from attendance_map
-    """
-    if attendance_map is None:
-        return None
-    return attendance_map.get(day)
+    if isinstance(attendance_map, (set, frozenset)):
+        return day in attendance_map
+    if hasattr(attendance_map, 'get'):
+        return bool(attendance_map.get(day))
+    return False

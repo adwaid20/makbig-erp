@@ -151,17 +151,47 @@
                     </div>
                 </div>
 
+                
                 <!-- Actions -->
-                <div class="col-12 col-md-2 py-3 text-end pe-md-4">
-                    <form method="post" action="{% url 'delete_student' student.id %}">
-                        {% csrf_token %}
-                        <button type="submit"
-                                class="btn-delete"
-                                onclick="return confirm('Delete this student?');">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </form>
-                </div>
+<div class="col-12 col-md-2 py-3 text-end pe-md-4">
+
+    <div class="d-flex justify-content-end gap-2">
+
+        <!-- Active / Inactive Toggle -->
+        <form method="POST" action="{% url 'toggle_student_status' student.id %}">
+            {% csrf_token %}
+
+            <button type="submit"
+                    class="btn btn-sm rounded-pill px-3
+                    {% if student.is_active %}
+                        btn-success
+                    {% else %}
+                        btn-secondary
+                    {% endif %}">
+
+                {% if student.is_active %}
+                    Active
+                {% else %}
+                    Inactive
+                {% endif %}
+
+            </button>
+
+        </form>
+
+        <!-- Delete -->
+        <form method="post" action="{% url 'delete_student' student.id %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn-delete"
+                    onclick="return confirm('Delete this student?');">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+        </form>
+
+    </div>
+
+</div>
 
             </div>
         </div>
