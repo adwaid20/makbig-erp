@@ -11,10 +11,10 @@ from penalties.models import Penalty
 from django.db.models import Sum
 from django.utils import timezone
 
+from django.core.cache import cache
 
-
-
-
+DASHBOARD_CACHE_KEY = "dashboard:summary"
+DASHBOARD_CACHE_TIMEOUT = 60
 
 def create_student(data):
     temp_password=get_random_string(8)
@@ -53,8 +53,15 @@ def create_student(data):
         )
     except Exception:
         pass
+    
+    invalidate_dashboard_cache()
 
     return user
+
+
+def invalidate_dashboard_cache():
+    cache.delete(DASHBOARD_CACHE_KEY)
+
 
 
 class DashboardService:
@@ -100,7 +107,12 @@ class DashboardService:
     @classmethod
     def get_dashboard_summary(cls):
 
-        return {
+        cached_data = cache.get(DASHBOARD_CACHE_KEY)
+
+        if cached_data:
+            return cached_data
+    
+        data = {
             "active_students": cls.active_students(),
             "total_students": cls.total_students(),
             "present_today": cls.todays_attendance(),
@@ -109,3 +121,7 @@ class DashboardService:
             "pending_works": cls.pending_works(),
             "unpaid_fines": cls.unpaid_fines(),
         }
+
+        cache.set(DASHBOARD_CACHE_KEY, data, DASHBOARD_CACHE_TIMEOUT)
+
+        return data
