@@ -13,6 +13,9 @@ from adminpanel.models import StudentProfile, Course
 from .models import Penalty
 from .forms import PenaltyUpdateForm
 
+from django.core.cache import cache
+from adminpanel.services import DASHBOARD_CACHE_KEY
+
 
 def is_staff_user(user):
     return user.is_staff
@@ -91,6 +94,9 @@ def edit_penalty(request, penalty_id):
         form = PenaltyUpdateForm(request.POST, instance=penalty)
         if form.is_valid():
             form.save()
+
+            cache.delete(DASHBOARD_CACHE_KEY)
+
             return redirect('student_detail', student_id=penalty.student.id)
     else:
         form = PenaltyUpdateForm(instance=penalty)
@@ -113,5 +119,7 @@ def mark_penalty_paid(request, penalty_id):
 
     penalty.is_paid = True
     penalty.save()
+    
+    cache.delete(DASHBOARD_CACHE_KEY)
 
     return redirect('student_detail', student_id=penalty.student.id)

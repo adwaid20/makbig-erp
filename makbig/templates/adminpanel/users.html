@@ -5,24 +5,483 @@
 
 {% block content %}
 
-<!-- Header & Controls -->
-<div class="row g-3 align-items-center mb-4">
-    <div class="col-12 col-md">
-        <h4 class="mb-1 fw-bold text-dark">Students</h4>
-        <p class="text-muted mb-0 small">Manage permissions and view enrollment progress.</p>
+<style>
+    :root {
+        --ink:       #0f1117;
+        --ink-soft:  #4a5068;
+        --ink-muted: #9199b1;
+        --surface:   #ffffff;
+        --surface-2: #f4f5f8;
+        --border:    #e8eaf0;
+        --accent:    #2563eb;
+        --accent-bg: #eff4ff;
+        --danger:    #e53e3e;
+        --danger-bg: #fff5f5;
+        --success:   #16a34a;
+        --success-bg:#f0fdf4;
+        --radius:    12px;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .page-header-left h4 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0 0 3px;
+        letter-spacing: -.02em;
+    }
+
+    .page-header-left p {
+        font-size: .82rem;
+        color: var(--ink-muted);
+        margin: 0;
+    }
+
+    .page-header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* ── Filter pill ── */
+    .filter-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 50px;
+        padding: 6px 14px 6px 10px;
+        font-size: .82rem;
+        color: var(--ink-soft);
+    }
+
+    .filter-pill i { color: var(--ink-muted); font-size: .75rem; }
+
+    .filter-pill select {
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: .82rem;
+        font-weight: 500;
+        color: var(--ink);
+        cursor: pointer;
+        min-width: 120px;
+    }
+
+    /* ── Add button ── */
+    .btn-add {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--ink);
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 600;
+        padding: 8px 18px;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: background .2s, transform .15s, box-shadow .2s;
+        letter-spacing: .01em;
+    }
+
+    .btn-add:hover {
+        background: #1a1f30;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(15,17,23,.18);
+    }
+
+    /* ── Alerts ── */
+    .alert-bar {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 13px 16px;
+        border-radius: var(--radius);
+        font-size: .84rem;
+        font-weight: 500;
+        margin-bottom: 16px;
+        border: 1px solid transparent;
+    }
+
+    .alert-bar.success { background: var(--success-bg); border-color: #bbf7d0; color: var(--success); }
+    .alert-bar.danger  { background: var(--danger-bg);  border-color: #fed7d7; color: var(--danger); }
+    .alert-bar.info    { background: var(--accent-bg);  border-color: #bfdbfe; color: var(--accent); }
+    .alert-bar i { margin-top: 1px; flex-shrink: 0; }
+
+    /* Credentials card inside success alert */
+    .cred-card {
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .cred-item small {
+        display: block;
+        font-size: .68rem;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--ink-muted);
+        margin-bottom: 3px;
+    }
+
+    .cred-item span {
+        font-family: 'Courier New', monospace;
+        font-size: .88rem;
+        font-weight: 700;
+        color: var(--ink);
+        user-select: all;
+    }
+
+    /* ── Table card ── */
+    .table-card {
+        background: var(--surface);
+        border-radius: 18px;
+        border: 1.5px solid var(--border);
+        overflow: hidden;
+    }
+
+    /* Desktop column header */
+    .table-head {
+        display: grid;
+        grid-template-columns: 2.5fr 1.5fr 1.2fr 1.5fr 1.2fr;
+        padding: 11px 24px;
+        background: var(--surface-2);
+        border-bottom: 1.5px solid var(--border);
+        font-size: .7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--ink-muted);
+    }
+
+    .table-head span:last-child { text-align: right; }
+
+    /* Student row */
+    .s-row {
+        display: grid;
+        grid-template-columns: 2.5fr 1.5fr 1.2fr 1.5fr 1.2fr;
+        align-items: center;
+        padding: 14px 24px;
+        border-bottom: 1px solid var(--border);
+        transition: background .15s;
+    }
+
+    .s-row:last-child { border-bottom: none; }
+    .s-row:hover { background: #fafbfd; }
+
+    /* Avatar */
+    .avatar {
+        width: 38px; height: 38px;
+        border-radius: 50%;
+        background: var(--accent-bg);
+        color: var(--accent);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700;
+        font-size: .78rem;
+        flex-shrink: 0;
+        letter-spacing: .02em;
+    }
+
+    .s-name {
+        font-size: .88rem;
+        font-weight: 600;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .s-email {
+        font-size: .75rem;
+        color: var(--ink-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Course badge */
+    .course-badge {
+        display: inline-block;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        color: var(--ink-soft);
+        font-size: .72rem;
+        font-weight: 500;
+        padding: 4px 10px;
+        border-radius: 50px;
+        white-space: nowrap;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Date */
+    .s-date {
+        font-size: .78rem;
+        color: var(--ink-muted);
+    }
+
+    /* Progress bar */
+    .prog-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .prog-track {
+        flex: 1;
+        height: 5px;
+        background: var(--border);
+        border-radius: 99px;
+        overflow: hidden;
+    }
+
+    .prog-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), #1d4ed8);
+        border-radius: 99px;
+        transition: width .4s ease;
+    }
+
+    .prog-label {
+        font-size: .72rem;
+        font-weight: 600;
+        color: var(--ink-soft);
+        min-width: 30px;
+        text-align: right;
+    }
+
+    /* Actions column */
+    .actions-col {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* ── Toggle switch ── */
+    /*
+        This is a CSS-only sliding toggle.
+        No JavaScript needed — it's a hidden checkbox + label trick.
+        The <form> submits when the label is clicked via a hidden button.
+    */
+
+    .toggle-form {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    /* The visible track (the pill background) */
+    .toggle-track {
+        position: relative;
+        width: 40px;
+        height: 22px;
+        border-radius: 99px;
+        cursor: pointer;
+        transition: background .25s, box-shadow .25s;
+        flex-shrink: 0;
+    }
+
+    /* OFF state — gray track */
+    .toggle-track.off {
+        background: #d1d5db;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,.12);
+    }
+
+    /* ON state — green track */
+    .toggle-track.on {
+        background: var(--success);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,.15), 0 0 0 3px rgba(22,163,74,.12);
+    }
+
+    /* The white circle that slides */
+    .toggle-track::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 4px rgba(0,0,0,.2);
+        transition: left .25s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* Circle position: OFF = left, ON = right */
+    .toggle-track.off::after { left: 3px; }
+    .toggle-track.on::after  { left: 21px; }
+
+    /* Label text next to the switch */
+    .toggle-label {
+        font-size: .75rem;
+        font-weight: 600;
+        letter-spacing: .02em;
+        min-width: 44px;
+    }
+
+    .toggle-label.on  { color: var(--success); }
+    .toggle-label.off { color: var(--ink-muted); }
+
+    /* Delete button */
+    .btn-del {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        border: 1.5px solid #fecaca;
+        background: var(--danger-bg);
+        color: var(--danger);
+        display: flex; align-items: center; justify-content: center;
+        font-size: .75rem;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+    .btn-del:hover {
+        background: var(--danger);
+        border-color: var(--danger);
+        color: #fff;
+        transform: scale(1.08);
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 64px 24px;
+        color: var(--ink-muted);
+    }
+
+    .empty-state .empty-icon {
+        width: 64px; height: 64px;
+        background: var(--surface-2);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        color: var(--ink-muted);
+        margin: 0 auto 16px;
+    }
+
+    .empty-state h6 {
+        font-size: .95rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 6px;
+    }
+
+    .empty-state p {
+        font-size: .82rem;
+        margin-bottom: 20px;
+    }
+
+    .btn-empty {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--ink);
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 600;
+        padding: 8px 20px;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: background .2s;
+    }
+
+    .btn-empty:hover { background: #1a1f30; color: #fff; }
+
+    /* Pagination */
+    .pagination-wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 24px;
+        border-top: 1.5px solid var(--border);
+        background: var(--surface);
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .page-info {
+        font-size: .78rem;
+        color: var(--ink-muted);
+    }
+
+    .page-btns {
+        display: flex;
+        gap: 6px;
+    }
+
+    .page-btn {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        border: 1.5px solid var(--border);
+        background: var(--surface);
+        color: var(--ink-soft);
+        font-size: .78rem;
+        font-weight: 600;
+        display: flex; align-items: center; justify-content: center;
+        text-decoration: none;
+        transition: all .15s;
+    }
+
+    .page-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-bg);
+    }
+
+    .page-btn.disabled {
+        opacity: .35;
+        pointer-events: none;
+    }
+
+    /* Mobile stacking */
+    @media (max-width: 767px) {
+        .table-head { display: none; }
+
+        .s-row {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            padding: 16px;
+        }
+
+        .actions-col { justify-content: flex-start; }
+    }
+</style>
+
+<!-- ── Page Header ── -->
+<div class="page-header">
+    <div class="page-header-left">
+        <h4>Students</h4>
+        <p>Manage permissions and view enrollment progress.</p>
     </div>
-    <div class="col-12 col-md-auto d-flex gap-2">
-        <!-- Filter -->
-        <form method="get" class="d-flex align-items-center">
-            <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden bg-white pe-2 border">
-                <span class="input-group-text border-0 bg-transparent text-muted ps-3">
-                    <i class="fa-solid fa-filter"></i>
-                </span>
-                <select name="course" class="form-select border-0 form-select-sm shadow-none bg-transparent fw-medium"
-                    onchange="this.form.submit()" style="min-width: 140px; cursor: pointer;">
+    <div class="page-header-right">
+
+        <!-- Course filter -->
+        <form method="get">
+            <div class="filter-pill">
+                <i class="fa-solid fa-filter"></i>
+                <select name="course" onchange="this.form.submit()">
                     <option value="">All Courses</option>
                     {% for course in courses %}
-                    <option value="{{ course.id }}" {% if selected_course == course.id|stringformat:"s" %}selected{% endif%}>
+                    <option value="{{ course.id }}"
+                        {% if selected_course == course.id|stringformat:"s" %}selected{% endif %}>
                         {{ course.name }}
                     </option>
                     {% endfor %}
@@ -30,270 +489,196 @@
             </div>
         </form>
 
-        <!-- Add Button -->
-        <a href="{% url 'add_student' %}"
-            class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm fw-medium d-flex align-items-center gap-2 hover-scale">
-            <i class="fa-solid fa-plus"></i>
-            <span>Add Student</span>
+        <!-- Add student -->
+        <a href="{% url 'add_student' %}" class="btn-add">
+            <i class="fa-solid fa-plus"></i> Add Student
         </a>
+
     </div>
 </div>
 
-<!-- Temp Password Alert -->
+<!-- ── Credentials alert (shown right after creation) ── -->
 {% if temp_email and temp_password %}
-<div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 position-relative overflow-hidden">
-    <div class="d-flex align-items-start gap-3 position-relative" style="z-index: 1;">
-        <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0"
-            style="width: 40px; height: 40px;">
-            <i class="fa-solid fa-key fs-5"></i>
+<div class="alert-bar success" style="flex-direction: column; align-items: flex-start;">
+    <div style="display:flex; gap:10px; align-items:center;">
+        <i class="fa-solid fa-circle-check"></i>
+        <div>
+            <div style="font-weight:700; margin-bottom:2px;">Student Created Successfully</div>
+            <div style="font-size:.78rem; opacity:.8;">Share these credentials now — they won't be shown again.</div>
         </div>
-        <div class="flex-grow-1">
-            <h6 class="alert-heading fw-bold mb-1">Student Created Successfully</h6>
-            <p class="mb-2 text-opacity-75 small">Share these credentials immediately. They will not be shown again.</p>
-
-            <div class="d-flex flex-wrap gap-3 mt-3">
-                <div class="bg-white bg-opacity-50 px-3 py-2 rounded-2 border border-white border-opacity-25 shadow-sm">
-                    <small class="d-block text-uppercase fw-bold opacity-50" style="font-size: 0.65rem;">Email</small>
-                    <span class="font-monospace fw-bold user-select-all">{{ temp_email }}</span>
-                </div>
-                <div class="bg-white bg-opacity-50 px-3 py-2 rounded-2 border border-white border-opacity-25 shadow-sm">
-                    <small class="d-block text-uppercase fw-bold opacity-50" style="font-size: 0.65rem;">Temporary
-                        Password</small>
-                    <span class="font-monospace fw-bold text-danger user-select-all">{{ temp_password }}</span>
-                </div>
-            </div>
+    </div>
+    <div class="cred-card">
+        <div class="cred-item">
+            <small>Email</small>
+            <span>{{ temp_email }}</span>
+        </div>
+        <div class="cred-item">
+            <small>Temporary Password</small>
+            <span style="color:var(--danger);">{{ temp_password }}</span>
         </div>
     </div>
 </div>
 {% endif %}
 
-<!-- Messages -->
+<!-- ── Django flash messages ── -->
 {% for message in messages %}
-<div class="alert alert-{{ message.tags }} border-0 shadow-sm rounded-3 d-flex align-items-center gap-3">
+<div class="alert-bar
+    {% if message.tags == 'success' %}success
+    {% elif message.tags == 'error' or message.tags == 'danger' %}danger
+    {% else %}info{% endif %}">
     {% if message.tags == 'success' %}
-    <i class="fa-solid fa-circle-check fs-5"></i>
+        <i class="fa-solid fa-circle-check"></i>
     {% elif message.tags == 'error' or message.tags == 'danger' %}
-    <i class="fa-solid fa-circle-exclamation fs-5"></i>
+        <i class="fa-solid fa-circle-exclamation"></i>
     {% else %}
-    <i class="fa-solid fa-circle-info fs-5"></i>
+        <i class="fa-solid fa-circle-info"></i>
     {% endif %}
-    <div>{{ message }}</div>
+    <span>{{ message }}</span>
 </div>
 {% endfor %}
 
-<!-- Content Card -->
-<div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+<!-- ── Table card ── -->
+<div class="table-card">
 
-    <!-- Desktop Header -->
-    <div class="card-header bg-white border-bottom py-3 d-none d-md-block">
-        <div class="row fw-semibold text-uppercase text-muted small px-2"
-             style="font-size: 0.72rem; letter-spacing: 0.8px;">
-            <div class="col-4 ps-4">Student</div>
-            <div class="col-2">Course</div>
-            <div class="col-2">Joined</div>
-            <div class="col-2">Progress</div>
-            <div class="col-2 text-end pe-4">Actions</div>
-        </div>
+    <!-- Column headers (desktop only) -->
+    <div class="table-head d-none d-md-grid">
+        <span>Student</span>
+        <span>Course</span>
+        <span>Joined</span>
+        <span>Progress</span>
+        <span style="text-align:right;">Actions</span>
     </div>
 
-    <div class="card-body p-0">
+    <!-- Rows -->
+    {% for student in page_obj %}
+    <div class="s-row">
 
-        {% for student in page_obj %}
-        <div class="student-row border-bottom">
-
-            <div class="row align-items-center gx-0">
-
-                <!-- Student -->
-                <div class="col-12 col-md-4 py-3 ps-md-4">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="avatar">
-                            {{ student.user.first_name|first|default:"U"|upper }}
-                            {{ student.user.last_name|first|default:""|upper }}
-                        </div>
-                        <div class="fw-semibold text-dark text-truncate w-100">
-                            <div class="fw-semibold text-dark text-truncate">
-                                {{ student.user.first_name }} {{ student.user.last_name }}
-                            </div>
-                            <div class="small text-muted text-truncate">
-                                {{ student.user.email }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Course -->
-                <div class="col-6 col-md-2 py-3">
-                    {% if student.course %}
-                        <span class="badge-soft">
-                            {{ student.course.name }}
-                        </span>
-                    {% else %}
-                        <span class="text-muted small fst-italic">Not Enrolled</span>
-                    {% endif %}
-                </div>
-
-                <!-- Date -->
-                <div class="col-6 col-md-2 py-3 text-secondary small">
-                    {{ student.enrollment_date|date:"M d, Y" }}
-                </div>
-
-                <!-- Progress -->
-                <div class="col-12 col-md-2 py-3">
-                    <div class="progress-wrapper">
-                        <div class="progress">
-                            <div class="progress-bar"
-                                 style="width: {{ student.progress_percent }}%;">
-                            </div>
-                        </div>
-                        <span class="small fw-semibold">
-                            {{ student.progress_percent }}%
-                        </span>
-                    </div>
-                </div>
-
-                
-                <!-- Actions -->
-<div class="col-12 col-md-2 py-3 text-end pe-md-4">
-
-    <div class="d-flex justify-content-end gap-2">
-
-        <!-- Active / Inactive Toggle -->
-        <form method="POST" action="{% url 'toggle_student_status' student.id %}">
-            {% csrf_token %}
-
-            <button type="submit"
-                    class="btn btn-sm rounded-pill px-3
-                    {% if student.is_active %}
-                        btn-success
-                    {% else %}
-                        btn-secondary
-                    {% endif %}">
-
-                {% if student.is_active %}
-                    Active
-                {% else %}
-                    Inactive
-                {% endif %}
-
-            </button>
-
-        </form>
-
-        <!-- Delete -->
-        <form method="post" action="{% url 'delete_student' student.id %}">
-            {% csrf_token %}
-            <button type="submit"
-                    class="btn-delete"
-                    onclick="return confirm('Delete this student?');">
-                <i class="fa-solid fa-trash-can"></i>
-            </button>
-        </form>
-
-    </div>
-
-</div>
-
+        <!-- Name + email -->
+        <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+            <div class="avatar">
+                {{ student.user.first_name|first|default:"U"|upper }}{{ student.user.last_name|first|default:""|upper }}
+            </div>
+            <div style="min-width:0;">
+                <div class="s-name">{{ student.user.first_name }} {{ student.user.last_name }}</div>
+                <div class="s-email">{{ student.user.email }}</div>
             </div>
         </div>
 
-        {% empty %}
-        <div class="empty-state">
-            <i class="fa-solid fa-users-slash"></i>
-            <h6>No Students Found</h6>
-            <p>Select a different course or add a new student.</p>
-            <a href="{% url 'add_student' %}" class="btn btn-primary btn-sm rounded-pill px-4">
-                Add Student
-            </a>
+        <!-- Course -->
+        <div>
+            {% if student.course %}
+                <span class="course-badge">{{ student.course.name }}</span>
+            {% else %}
+                <span class="s-date" style="font-style:italic;">—</span>
+            {% endif %}
         </div>
-        {% endfor %}
 
+        <!-- Joined date -->
+        <div class="s-date">{{ student.enrollment_date|date:"M d, Y" }}</div>
+
+        <!-- Progress bar -->
+        <div class="prog-wrap">
+            <div class="prog-track">
+                <div class="prog-fill" style="width:{{ student.progress_percent }}%;"></div>
+            </div>
+            <span class="prog-label">{{ student.progress_percent }}%</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions-col">
+
+            <!--
+                SLIDING TOGGLE SWITCH
+                How it works:
+                - A hidden <form> with a hidden <button> does the actual POST
+                - The visible styled div (track + circle) triggers the form on click
+                - CSS classes "on"/"off" control color and circle position
+                - No JS frameworks needed — just one onclick calling .click()
+            -->
+            <form method="POST" action="{% url 'toggle_student_status' student.id %}"
+                  id="toggle-form-{{ student.id }}">
+                {% csrf_token %}
+                <button type="submit" style="display:none;"
+                        id="toggle-btn-{{ student.id }}"></button>
+            </form>
+
+            <div class="toggle-form"
+                 onclick="document.getElementById('toggle-btn-{{ student.id }}').click()"
+                 style="cursor:pointer;"
+                 title="{% if student.is_active %}Click to deactivate{% else %}Click to activate{% endif %}">
+                <div class="toggle-track {% if student.is_active %}on{% else %}off{% endif %}"></div>
+                <span class="toggle-label {% if student.is_active %}on{% else %}off{% endif %}">
+                    {% if student.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </div>
+
+            <!-- Delete -->
+            <form method="POST" action="{% url 'delete_student' student.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-del"
+                    onclick="return confirm('Delete this student? This cannot be undone.');">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </form>
+
+        </div>
     </div>
+    {% empty %}
+
+    <!-- Empty state -->
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fa-solid fa-users-slash"></i>
+        </div>
+        <h6>No Students Found</h6>
+        <p>Try selecting a different course or add a new student.</p>
+        <a href="{% url 'add_student' %}" class="btn-empty">
+            <i class="fa-solid fa-plus"></i> Add Student
+        </a>
+    </div>
+
+    {% endfor %}
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination-wrap">
+        <span class="page-info">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            &nbsp;·&nbsp; {{ page_obj.paginator.count }} students
+        </span>
+        <div class="page-btns">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if selected_course %}&course={{ selected_course }}{% endif %}"
+                   class="page-btn">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+            {% else %}
+                <span class="page-btn disabled"><i class="fa-solid fa-chevron-left"></i></span>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="page-btn" style="background:var(--ink);border-color:var(--ink);color:#fff;">
+                        {{ num }}
+                    </span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}{% if selected_course %}&course={{ selected_course }}{% endif %}"
+                       class="page-btn">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if selected_course %}&course={{ selected_course }}{% endif %}"
+                   class="page-btn">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            {% else %}
+                <span class="page-btn disabled"><i class="fa-solid fa-chevron-right"></i></span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
 </div>
-
-<style>
-    /* Custom Utilities */
-    .student-row {
-    transition: background 0.2s ease;
-    padding: 0 1rem;
-}
-
-.student-row:hover {
-    background: #f8fafc;
-}
-
-.avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: rgba(13,110,253,0.1);
-    color: #0d6efd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.badge-soft {
-    background: #f1f3f5;
-    padding: 6px 14px;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    display: inline-block;
-}
-
-.progress-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.progress {
-    flex: 1;
-    height: 6px;
-    background: #e9ecef;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.progress-bar {
-    background: linear-gradient(90deg, #0d6efd, #0a58ca);
-    border-radius: 10px;
-}
-
-.btn-delete {
-    border: none;
-    background: #f8d7da;
-    color: #dc3545;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-}
-
-.btn-delete:hover {
-    background: #dc3545;
-    color: #fff;
-    transform: scale(1.08);
-}
-
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #6c757d;
-}
-
-.empty-state i {
-    font-size: 2.5rem;
-    opacity: 0.4;
-    margin-bottom: 15px;
-}
-
-.empty-state h6 {
-    font-weight: 600;
-    color: #212529;
-}
-</style>
 
 {% endblock %}

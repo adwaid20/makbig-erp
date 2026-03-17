@@ -109,7 +109,7 @@ class DashboardService:
 
         cached_data = cache.get(DASHBOARD_CACHE_KEY)
 
-        if cached_data:
+        if cached_data is not None:
             return cached_data
     
         data = {
