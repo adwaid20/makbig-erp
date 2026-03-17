@@ -14,7 +14,8 @@ from penalties.models import Penalty
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 
-
+from django.core.cache import cache
+from adminpanel.services import DASHBOARD_CACHE_KEY
 
 
 def is_admin_user(user):
@@ -40,25 +41,19 @@ def attendance_session(request):
 
     students = AttendanceService.get_students(selected_course)
 
-    existing_attendance = AttendanceService.get_existing_attendance(
-        students,
-        selected_date
-    )
+    existing_attendance = AttendanceService.get_existing_attendance(students,selected_date)
 
-    existing_fines = AttendanceService.get_existing_fines(
-        students,
-        selected_date
-    )
+    existing_fines = AttendanceService.get_existing_fines(students,selected_date)
 
 
     if request.method == "POST" and request.POST.get("action") == "save_attendance":
 
         try:
-            AttendanceService.save_attendance(
-                request,
-                students,
-                selected_date
-            )
+            AttendanceService.save_attendance(request,students,selected_date)
+
+            # invalidate dashboard cache
+            cache.delete(DASHBOARD_CACHE_KEY)
+
 
         except ValueError as e:
             messages.error(request, str(e))
@@ -86,6 +81,10 @@ def attendance_session(request):
             "selected_course": selected_course,
         },
     )
+
+
+
+
 def student_attendance(request):
     student = get_object_or_404(StudentProfile,user=request.user)
 

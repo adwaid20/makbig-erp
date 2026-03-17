@@ -1,192 +1,316 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Student | Makbig Admin</title>
-
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Add Student | Makbig</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --ink:       #0f1117;
+            --ink-soft:  #4a5068;
+            --ink-muted: #9199b1;
+            --surface:   #ffffff;
+            --surface-2: #f4f5f8;
+            --border:    #e2e5ef;
+            --accent:    #2563eb;
+            --danger:    #e53e3e;
+            --success:   #16a34a;
+            --radius:    14px;
+            --shadow:    0 2px 8px rgba(15,17,23,.06), 0 12px 40px rgba(15,17,23,.08);
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--surface-2);
             min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            background-image: radial-gradient(circle, #c7cde0 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 480px;
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            animation: rise .45s cubic-bezier(.22,.68,0,1.2) both;
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(24px) scale(.97); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        .card-header {
+            background: var(--ink);
+            padding: 32px 36px 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before,
+        .card-header::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            opacity: .07;
+            background: #fff;
+        }
+        .card-header::before { width: 180px; height: 180px; top: -60px; right: -40px; }
+        .card-header::after  { width: 100px; height: 100px; bottom: -30px; left: 20px; }
+
+        .badge-icon {
+            width: 48px; height: 48px;
+            background: rgba(255,255,255,.1);
+            border: 1px solid rgba(255,255,255,.15);
+            border-radius: 12px;
+            display: grid; place-items: center;
+            margin-bottom: 16px;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        .card-header h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -.02em;
+            margin-bottom: 4px;
+        }
+
+        .card-header p {
+            font-size: .82rem;
+            color: rgba(255,255,255,.5);
+            font-weight: 300;
+        }
+
+        .card-body { padding: 28px 36px 36px; }
+
+        .alert {
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: .82rem;
+            font-weight: 500;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+        }
+        .alert-success { background: #f0fdf4; border-color: #bbf7d0; color: var(--success); }
+        .alert-error,
+        .alert-danger  { background: #fff5f5; border-color: #fed7d7; color: var(--danger); }
+        .alert-info    { background: #eff6ff; border-color: #bfdbfe; color: var(--accent); }
+        .alert i { margin-top: 1px; flex-shrink: 0; }
+
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .field { margin-bottom: 18px; }
+
+        .field label {
+            display: block;
+            font-size: .75rem;
+            font-weight: 500;
+            color: var(--ink-soft);
+            margin-bottom: 6px;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            padding: 10px 14px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .9rem;
+            color: var(--ink);
+            background: var(--surface-2);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            outline: none;
+            transition: border-color .2s, box-shadow .2s, background .2s;
+            appearance: none;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+        }
+
+        .field select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239199b1' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-color: var(--surface-2);
+            padding-right: 38px;
+        }
+
+        .field.has-error input,
+        .field.has-error select {
+            border-color: var(--danger);
+            background: #fff8f8;
+        }
+
+        .field-error {
+            font-size: .75rem;
+            color: var(--danger);
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 6px 0 22px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 13px;
+            background: var(--ink);
+            color: #fff;
+            font-family: 'Syne', sans-serif;
+            font-size: .95rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            letter-spacing: .01em;
+            transition: background .2s, transform .15s, box-shadow .2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            gap: 8px;
         }
 
-        .auth-card {
-            width: 100%;
-            max-width: 500px;
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-            background: #fff;
-        }
-
-        .auth-header {
-            background: #fff;
-            padding: 30px 30px 10px;
-            text-align: center;
-        }
-
-        .auth-body {
-            padding: 20px 30px 40px;
-        }
-
-        /* --- Styling the Raw Django Form --- */
-        .django-raw-form p {
-            margin-bottom: 1.25rem;
-        }
-
-        /* Form Labels */
-        .django-raw-form label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #344767;
-            font-size: 0.875rem;
-        }
-
-        /* Form Inputs */
-        .django-raw-form input[type="text"],
-        .django-raw-form input[type="email"],
-        .django-raw-form input[type="password"],
-        .django-raw-form select,
-        .django-raw-form textarea {
-            display: block;
-            width: 100%;
-            padding: 0.625rem 1rem;
-            font-size: 0.875rem;
-            font-weight: 400;
-            line-height: 1.5;
-            color: #495057;
-            background-color: #fff;
-            background-clip: padding-box;
-            border: 1px solid #d2d6da;
-            border-radius: 0.5rem;
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-        }
-
-        .django-raw-form input:focus,
-        .django-raw-form select:focus,
-        .django-raw-form textarea:focus {
-            border-color: #8bbafe;
-            outline: 0;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-        }
-
-        /* Submit Button */
-        .btn-auth {
-            padding: 12px;
-            font-weight: 600;
-            border-radius: 8px;
-            letter-spacing: 0.5px;
-            transition: all 0.2s;
-        }
-
-        .btn-auth:hover {
+        .btn-submit:hover {
+            background: #1a1f30;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.3);
+            box-shadow: 0 6px 20px rgba(15,17,23,.2);
         }
 
-        /* Help texts */
-        .helptext {
-            display: block;
-            margin-top: 0.25rem;
-            font-size: 0.75rem;
-            color: #6c757d;
+        .btn-submit:active { transform: translateY(0); }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 16px;
+            color: var(--ink-muted);
+            font-size: .82rem;
+            text-decoration: none;
+            transition: color .2s;
         }
-
-        /* Django form errors */
-.errorlist {
-    list-style: none;
-    padding-left: 0;
-    margin-top: 0.25rem;
-    margin-bottom: 0;
-    color: #dc3545;
-    font-size: 0.8rem;
-}
-
-.errorlist li {
-    margin-top: 0.25rem;
-}
-
+        .back-link:hover { color: var(--accent); }
     </style>
 </head>
-
 <body>
 
-    <div class="auth-card">
+<div class="card">
 
-        <!-- Header -->
-        <div class="auth-header">
-            <div class="mb-3 d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle"
-                style="width: 60px; height: 60px;">
-                <i class="fa-solid fa-user-plus fs-3"></i>
-            </div>
-            <h4 class="fw-bold text-dark mb-1">Add New Student</h4>
-            <p class="text-muted small mb-0">Enter student details to create an account.</p>
+    <div class="card-header">
+        <div class="badge-icon">
+            <i class="fa-solid fa-user-plus"></i>
         </div>
-
-        <div class="auth-body">
-
-            <!-- Messages -->
-            {% if messages %}
-            {% for message in messages %}
-            <div
-                class="alert alert-{{ message.tags|default:'info' }} border-0 shadow-sm rounded-3 d-flex align-items-center gap-2 mb-4 p-3">
-                {% if 'success' in message.tags %}
-                <i class="fa-solid fa-circle-check text-success"></i>
-                {% elif 'error' in message.tags %}
-                <i class="fa-solid fa-circle-exclamation text-danger"></i>
-                {% else %}
-                <i class="fa-solid fa-circle-info text-primary"></i>
-                {% endif %}
-                <div class="small fw-medium">{{ message }}</div>
-            </div>
-            {% endfor %}
-            {% endif %}
-
-            <form method="POST">
-                {% csrf_token %}
-
-                <!-- Raw Form Container -->
-                <div class="django-raw-form">
-                    {% if form.non_field_errors %}
-<div class="alert alert-danger">
-    {{ form.non_field_errors }}
-</div>
-{% endif %}
-
-                    {{ form.as_p }}
-                </div>
-
-                <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-primary btn-auth">
-                        Add Student
-                    </button>
-                    <a href="{% url 'staff_students' %}"
-                        class="btn btn-link text-decoration-none text-muted btn-sm mt-3">
-                        <i class="fa-solid fa-arrow-left me-1"></i> Back to Users
-                    </a>
-                </div>
-            </form>
-
-        </div>
+        <h1>Add New Student</h1>
+        <p>Fill in the details below to create a student account.</p>
     </div>
 
-</body>
+    <div class="card-body">
 
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}">
+                {% if 'success' in message.tags %}
+                    <i class="fa-solid fa-circle-check"></i>
+                {% elif 'error' in message.tags %}
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                {% else %}
+                    <i class="fa-solid fa-circle-info"></i>
+                {% endif %}
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>{% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}</div>
+        </div>
+        {% endif %}
+
+        <form method="POST" novalidate>
+            {% csrf_token %}
+
+            <div class="row-2">
+                <div class="field {% if form.first_name.errors %}has-error{% endif %}">
+                    {{ form.first_name.label_tag }}
+                    {{ form.first_name }}
+                    {% for error in form.first_name.errors %}
+                        <div class="field-error"><i class="fa-solid fa-circle-exclamation"></i> {{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="field {% if form.last_name.errors %}has-error{% endif %}">
+                    {{ form.last_name.label_tag }}
+                    {{ form.last_name }}
+                    {% for error in form.last_name.errors %}
+                        <div class="field-error"><i class="fa-solid fa-circle-exclamation"></i> {{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="field {% if form.email.errors %}has-error{% endif %}">
+                {{ form.email.label_tag }}
+                {{ form.email }}
+                {% for error in form.email.errors %}
+                    <div class="field-error"><i class="fa-solid fa-circle-exclamation"></i> {{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="field {% if form.course.errors %}has-error{% endif %}">
+                {{ form.course.label_tag }}
+                {{ form.course }}
+                {% for error in form.course.errors %}
+                    <div class="field-error"><i class="fa-solid fa-circle-exclamation"></i> {{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="divider"></div>
+
+            <button type="submit" class="btn-submit">
+                <i class="fa-solid fa-user-plus"></i>
+                Create Student Account
+            </button>
+
+        </form>
+
+        <a href="{% url 'staff_students' %}" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> Back to Students
+        </a>
+
+    </div>
+</div>
+
+</body>
 </html>

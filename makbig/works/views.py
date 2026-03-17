@@ -7,12 +7,13 @@ from django.contrib.admin.views.decorators import staff_member_required
 from adminpanel.models import StudentProfile,Course
 
 # Create your views here.
+from django.core.cache import cache
+from adminpanel.services import DASHBOARD_CACHE_KEY
 
 
 @login_required
 def submit_work(request, assignment_id):
-    assignment = get_object_or_404(
-        WorkAssignment,
+    assignment = get_object_or_404(WorkAssignment,
         id=assignment_id,
         student=request.user.studentprofile
     )
@@ -37,6 +38,9 @@ def submit_work(request, assignment_id):
                 submission.reviewed_by = None
                 submission.reviewed_at = None
                 submission.save()
+
+                cache.delete(DASHBOARD_CACHE_KEY)
+
             else:
                 # 🆕 First submission
                 WorkSubmission.objects.create(
@@ -44,6 +48,9 @@ def submit_work(request, assignment_id):
                     submitted_date=timezone.now().date(),
                     screenshot=screenshot
                 )
+
+                cache.delete(DASHBOARD_CACHE_KEY)
+
 
         return redirect('student_works')
 
@@ -100,6 +107,7 @@ def manage_works(request):
                     student=student,
                     work_type=new_work
                 )
+            cache.delete(DASHBOARD_CACHE_KEY)
 
         return redirect('manage_works')
 
@@ -153,6 +161,8 @@ def update_submission_status(request, submission_id):
             submission.reviewed_by = request.user
             submission.reviewed_at = timezone.now()
             submission.save()
+            cache.delete(DASHBOARD_CACHE_KEY)
+
 
     return redirect(
         'work_submissions',

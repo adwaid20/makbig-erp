@@ -25,7 +25,8 @@ from .services import DashboardService
 from penalties.models import Penalty
 from .forms import StaffLoginForm,StudentLoginForm,AddStudentForm
 
-
+from django.core.cache import cache
+from adminpanel.services import DASHBOARD_CACHE_KEY
 
 User = get_user_model()
 
@@ -131,14 +132,18 @@ def student_dashboard(request):
 @user_passes_test(is_admin_user)
 def add_student(request):
     form=AddStudentForm(request.POST or None)
-    if request.method=='POST'and form.is_valid():
+    if request.method== "POST" and form.is_valid():
             email=form.cleaned_data['email']  #just to check if email already registered or not
 
             # if User.objects.filter(email=email).exists():
             #     messages.error(request,"Student with this email id already exist.") #just to check if email already registered or not
             #     return render(request,'adminpanel/add_student.html',{'form':form})  #just to check if email already registered or not
-
+            
             create_student(form.cleaned_data)
+
+            # invalidate dashboard cache
+            cache.delete(DASHBOARD_CACHE_KEY)
+
             messages.success(request,"Student created and email sent sucessfully.")
 
 
