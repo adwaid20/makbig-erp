@@ -11,6 +11,9 @@ from penalties.models import Penalty
 from django.db.models import Sum
 from django.utils import timezone
 
+from adminpanel.tasks import send_student_welcome_email
+from django.db.transaction import on_commit
+
 from django.core.cache import cache
 
 DASHBOARD_CACHE_KEY = "dashboard:summary"
@@ -39,20 +42,11 @@ def create_student(data):
             user=user,
             course=course,
             )
-    try:
-        send_mail(
-            subject="Welcome to Makbig-Account Created",
-            message=(
-                f"Hello {first_name},\n\n"
-                f"Your account with email : {email} has been created \n"
-                f"The temperory password for login is {temp_password}"
-                f"you may use the forgot password option by entering the linked email and set a new password"
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-        )
-    except Exception:
-        pass
+        
+
+        on_commit(lambda: send_student_welcome_email.delay(
+            email, first_name, temp_password
+        ))
     
     invalidate_dashboard_cache()
 
