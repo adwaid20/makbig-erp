@@ -11,7 +11,6 @@ class CustomUserAdmin(UserAdmin):
         'last_name',
         'is_staff',
         'is_superuser',
-        'is_student',
     )
 
     # list_filter = (

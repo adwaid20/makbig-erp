@@ -16,11 +16,26 @@ mobile_validator=RegexValidator(regex=r'^\d{10}$', message="Mobile number must c
 
 
 class User(AbstractUser):
+    ROLE_CHOICES = (
+    ('superadmin', 'Super Admin'),
+    ('staff', 'Staff'),
+    ('student', 'Student'),
+)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     email=models.EmailField(unique=True,db_index=True)
     mobile_number = models.CharField(max_length=15, blank=True, null=True,validators=[mobile_validator])
-    is_student=models.BooleanField(default=False)
+    
     first_name = models.CharField(max_length=100,validators=[name_validator])
     last_name = models.CharField(max_length=100,validators=[name_validator])
+
+    @property
+    def is_student(self):
+        return self.role == 'student'
+
+    @property
+    def is_superadmin(self):                  # ← ADD THIS — used by decorator
+        return self.role == 'superadmin'
+
 
     def clean(self):
         if self.is_student and self.is_staff:
