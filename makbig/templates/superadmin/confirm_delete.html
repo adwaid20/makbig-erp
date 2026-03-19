@@ -1,0 +1,196 @@
+{% extends 'layouts/staff_layout.html' %}
+{% block title %}Delete Staff{% endblock %}
+{% block page_title %}Delete Staff{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  .del-root {
+    font-family: 'DM Sans', sans-serif;
+    --ink: #0d1117; --ink-2: #374151; --ink-3: #6b7280;
+    --surface: #ffffff; --surface-2: #f9fafb; --border: #e5e7eb;
+    --blue: #2563eb;
+    --red: #dc2626; --red-soft: #fef2f2; --red-mid: #fecaca;
+    --green: #16a34a; --green-soft: #f0fdf4;
+    --amber: #d97706; --amber-soft: #fffbeb;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow-md: 0 4px 16px rgba(0,0,0,.08);
+  }
+
+  .del-wrap { max-width: 460px; }
+
+  .del-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+
+  /* Red accent bar at top */
+  .del-card::before {
+    content: ''; display: block; height: 4px;
+    background: linear-gradient(90deg, var(--red), #f87171);
+  }
+
+  .del-card-header {
+    padding: 1.25rem 1.5rem 1rem;
+    display: flex; align-items: center; gap: .75rem;
+  }
+  .del-warning-icon {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--red-soft); color: var(--red);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+    border: 2px solid var(--red-mid);
+  }
+  .del-title { font-size: .95rem; font-weight: 700; color: var(--red); margin: 0; }
+  .del-subtitle { font-size: .72rem; color: var(--ink-3); margin-top: .15rem; }
+
+  .del-card-body { padding: 0 1.5rem 1.25rem; }
+
+  /* Staff info box */
+  .del-info-box {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 1.1rem;
+  }
+  .del-info-header {
+    padding: .5rem .9rem; background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-size: .65rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--ink-3);
+    display: flex; align-items: center; gap: .4rem;
+  }
+  .del-info-row {
+    display: flex; align-items: center; padding: .55rem .9rem;
+    border-bottom: 1px solid var(--border); gap: .75rem;
+  }
+  .del-info-row:last-child { border-bottom: none; }
+  .del-info-key {
+    font-size: .68rem; font-weight: 600; color: var(--ink-3);
+    width: 60px; flex-shrink: 0; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .del-info-val {
+    font-size: .78rem; color: var(--ink); font-weight: 500;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Avatar in info box */
+  .del-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--red-soft); color: var(--red);
+    font-size: .8rem; font-weight: 700; border: 2px solid var(--red-mid);
+    display: flex; align-items: center; justify-content: center;
+    margin-right: .25rem; flex-shrink: 0;
+  }
+
+  /* Warning notice */
+  .del-notice {
+    background: var(--amber-soft); border: 1px solid #fde68a;
+    border-radius: var(--radius-sm); padding: .65rem .9rem;
+    font-size: .72rem; color: var(--amber);
+    display: flex; align-items: flex-start; gap: .5rem; margin-bottom: 1.1rem;
+  }
+
+  .del-footer {
+    padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+    background: var(--surface-2); display: flex; align-items: center; gap: .6rem;
+  }
+
+  .btn-delete {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--red); color: #fff;
+    font-size: .78rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    padding: .55rem 1.25rem; border-radius: var(--radius-sm);
+    border: none; cursor: pointer; transition: background .15s, box-shadow .15s;
+    box-shadow: 0 1px 3px rgba(220,38,38,.3);
+  }
+  .btn-delete:hover { background: #b91c1c; box-shadow: 0 4px 10px rgba(220,38,38,.35); }
+
+  .btn-cancel {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: transparent; color: var(--ink-3);
+    font-size: .78rem; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    padding: .55rem 1rem; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); cursor: pointer;
+    text-decoration: none; transition: all .15s;
+  }
+  .btn-cancel:hover { border-color: #9ca3af; color: var(--ink-2); background: var(--surface-2); }
+</style>
+
+<div class="del-root">
+  <div class="del-wrap">
+    <div class="del-card">
+
+      <div class="del-card-header">
+        <div class="del-warning-icon">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <div class="del-title">Delete Staff Member?</div>
+          <div class="del-subtitle">This action cannot be undone</div>
+        </div>
+      </div>
+
+      <div class="del-card-body">
+
+        <!-- Staff info summary -->
+        <div class="del-info-box">
+          <div class="del-info-header">
+            <i class="fa-solid fa-user" style="font-size:.6rem"></i>
+            Staff Details
+          </div>
+
+          <!-- Avatar + name row -->
+          <div class="del-info-row" style="padding:.75rem .9rem">
+            <div class="del-avatar">{{ staff.first_name|slice:":1"|upper }}</div>
+            <div>
+              <div style="font-size:.85rem;font-weight:700;color:var(--ink)">
+                {{ staff.get_full_name|default:"—" }}
+              </div>
+              <div style="font-size:.68rem;color:var(--ink-3)">@{{ staff.username }}</div>
+            </div>
+          </div>
+
+          <div class="del-info-row">
+            <div class="del-info-key">Email</div>
+            <div class="del-info-val">{{ staff.email }}</div>
+          </div>
+          <div class="del-info-row">
+            <div class="del-info-key">Mobile</div>
+            <div class="del-info-val">{{ staff.mobile_number|default:"—" }}</div>
+          </div>
+          <div class="del-info-row">
+            <div class="del-info-key">Joined</div>
+            <div class="del-info-val">{{ staff.date_joined|date:"d M Y" }}</div>
+          </div>
+        </div>
+
+        <!-- Warning notice -->
+        <div class="del-notice">
+          <i class="fa-solid fa-circle-exclamation" style="margin-top:.1rem;flex-shrink:0"></i>
+          <span>
+            Deleting this account will permanently remove all associated data
+            including attendance records and activity history.
+          </span>
+        </div>
+
+      </div>
+
+      <div class="del-footer">
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn-delete">
+            <i class="fa-solid fa-trash" style="font-size:.65rem"></i>
+            Yes, Delete Permanently
+          </button>
+        </form>
+        <a href="{% url 'staff_list' %}" class="btn-cancel">
+          <i class="fa-solid fa-arrow-left" style="font-size:.6rem"></i>
+          Cancel
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

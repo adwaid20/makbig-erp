@@ -80,3 +80,61 @@ class AddStaffForm(forms.ModelForm):
             user.save()
 
         return user
+    
+
+class EditStaffForm(forms.ModelForm):
+
+    password = forms.CharField(
+        widget=forms.PasswordInput,
+        required=False,
+        help_text="Leave blank to keep current password"
+    )
+
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput,
+        required=False
+    )
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'mobile_number']
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+
+        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("Email already exists")
+
+        return email
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+
+        # only validate if user tries to change password
+        if password or confirm_password:
+            if password != confirm_password:
+                raise forms.ValidationError("Passwords do not match")
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+        password = self.cleaned_data.get('password')
+        if password:
+            user.set_password(password)
+
+        if commit:
+            user.save()
+
+        return user
+    
+
+class CourseForm(forms.ModelForm):
+
+    class Meta:
+        model = Course
+        fields = ['name', 'description', 'duration_months']

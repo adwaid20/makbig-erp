@@ -21,9 +21,11 @@ from django.core.exceptions import ValidationError
 
 from django_ratelimit.decorators import ratelimit
 
-from .services import DashboardService
+from .services import DashboardService,SuperAdminDashboardService,invalidate_superadmin_cache,CourseService
 from penalties.models import Penalty
-from .forms import StaffLoginForm,StudentLoginForm,AddStudentForm
+from .forms import StaffLoginForm,StudentLoginForm,AddStudentForm,AddStaffForm,EditStaffForm,CourseForm
+from .decorators import superadmin_required
+
 
 from django.core.cache import cache
 from adminpanel.services import DASHBOARD_CACHE_KEY
@@ -60,6 +62,12 @@ def staff_login(request):
 
             if user and (user.is_staff or user.is_superuser):
                 login(request, user)
+                print("is_superadmin:", user.is_superadmin)
+                print("is_superuser:", user.is_superuser)
+                print("is_staff:", user.is_staff)
+                print("role:", user.role)
+                if user.is_superadmin:
+                    return redirect('superadmin_dashboard')
                 return redirect('staff_dashboard')
 
             messages.error(request, "Access denied")
@@ -313,3 +321,114 @@ def student_profile(request):
 
 def get_started(request):
     return render(request,'adminpanel/get_started.html')
+
+
+
+#superadmin
+
+
+@never_cache
+@superadmin_required
+def superadmin_dashboard(request):
+    # get both datasets independently 
+    staff_context = SuperAdminDashboardService.get_dashboard_summary()
+    student_context = DashboardService.get_dashboard_summary()
+
+    # merge into one dict,no clashing both are seperate dicts
+    context = {**student_context, **staff_context}
+    return render(request, 'superadmin/dashboard.html', context)
+
+@never_cache
+@superadmin_required
+def superadmin_staff_list(request):
+    staff_list=User.objects.filter(is_staff=True, is_superuser=False).order_by('first_name')
+    return render(request,'superadmin/staff_list.html',{'staff_list':staff_list})
+
+
+@never_cache
+@superadmin_required
+def superadmin_add_staff(request):
+    if request.method == 'POST':
+        form=AddStaffForm(request.POST)
+        if form.is_valid():
+            form.save()
+            invalidate_superadmin_cache()
+            messages.success(request,"Staff member created sucessfully")
+            return redirect('staff_list')
+        else:
+            messages.error(request,"Staff adding was unsucessfull")
+    else:
+        form=AddStaffForm()
+    return render(request,'superadmin/add_staff.html',{'form':form})
+
+@never_cache
+@superadmin_required
+def edit_staff(request,pk):
+    staff=get_object_or_404(User, pk=pk, is_staff=True, is_superuser=False)
+    # role='staff' guard prevents editing other superadmins via URL manipulation
+    if request.method == 'POST':
+        form=EditStaffForm(request.POST, instance=staff)
+        if form.is_valid():
+            form.save()
+            invalidate_superadmin_cache()
+            messages.success(request,f"Staff {staff.get_full_name() or staff.username} details edited sucessfully")
+            return redirect('staff_list')
+        else:
+            messages.error(request,"Staff details editing failed")
+    else:
+        form=EditStaffForm(instance=staff)
+    return render (request,'superadmin/edit_staff.html',{'form':form, 'staff':staff})
+
+
+@require_POST
+@never_cache
+@superadmin_required
+def toggle_staff(request,pk):
+    staff=get_object_or_404(User, pk=pk, is_staff=True, is_superuser=False)
+    staff.is_active = not staff.is_active
+    staff.save(update_fields=['is_active'])
+    invalidate_superadmin_cache()
+    status = 'enabled' if staff.is_active else 'disabled'
+    messages.success(request, f'"{staff.get_full_name() or staff.username}" has been {status}.')
+    return redirect('staff_list')
+
+@never_cache
+@superadmin_required
+def delete_staff(request,pk):
+    staff=get_object_or_404(User, pk=pk , is_staff=True, is_superuser=False)
+    if request.method == 'POST':
+        if staff == request.user:
+            messages.error(request,"You cannot delete yourself.")
+            return redirect ('staff_list')
+        name = staff.get_full_name() or staff.username
+        staff.delete()
+        invalidate_superadmin_cache()
+        messages.success(request,f"Staff member {name} permanently delete")
+        return redirect('staff_list')
+    return redirect(request,'superadmin/confirm_delete.html',{'staff':staff})
+
+
+@login_required
+@user_passes_test(is_admin_user, login_url='staff_login')
+def course_list_create(request):
+
+    form = CourseForm()
+
+    if request.method == "POST":
+        form = CourseForm(request.POST)
+
+        if form.is_valid():
+            CourseService.create_course(form.cleaned_data)
+            messages.success(request, "Course added successfully")
+            return redirect('course_list')
+
+    courses = CourseService.get_all_courses()
+
+    return render(
+        request,
+        'adminpanel/course_list.html',
+        {
+            'form': form,
+            'courses': courses
+        }
+    )

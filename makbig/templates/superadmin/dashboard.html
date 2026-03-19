@@ -1,0 +1,461 @@
+{% extends 'layouts/staff_layout.html' %}
+{% block title %}Super Admin — Command Center{% endblock %}
+{% block page_title %}Command Center{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  .sa-root {
+    font-family: 'DM Sans', sans-serif;
+    --ink: #0d1117;
+    --ink-2: #374151;
+    --ink-3: #6b7280;
+    --surface: #ffffff;
+    --surface-2: #f9fafb;
+    --surface-3: #f3f4f6;
+    --border: #e5e7eb;
+    --border-2: #d1d5db;
+    --blue: #2563eb;
+    --blue-soft: #eff6ff;
+    --blue-mid: #bfdbfe;
+    --green: #16a34a;
+    --green-soft: #f0fdf4;
+    --green-mid: #bbf7d0;
+    --red: #dc2626;
+    --red-soft: #fef2f2;
+    --red-mid: #fecaca;
+    --amber: #d97706;
+    --amber-soft: #fffbeb;
+    --amber-mid: #fde68a;
+    --violet: #7c3aed;
+    --violet-soft: #f5f3ff;
+    --violet-mid: #ddd6fe;
+    --cyan: #0891b2;
+    --cyan-soft: #ecfeff;
+    --cyan-mid: #a5f3fc;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04);
+  }
+
+  /* ── Section label ── */
+  .sa-section-label {
+    font-size: .65rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: .75rem;
+    margin-top: 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .sa-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── KPI card ── */
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: .9rem;
+    box-shadow: var(--shadow);
+    transition: box-shadow .2s, transform .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .kpi-card.blue::before   { background: var(--blue); }
+  .kpi-card.green::before  { background: var(--green); }
+  .kpi-card.red::before    { background: var(--red); }
+  .kpi-card.amber::before  { background: var(--amber); }
+  .kpi-card.violet::before { background: var(--violet); }
+  .kpi-card.cyan::before   { background: var(--cyan); }
+
+  .kpi-icon {
+    width: 40px; height: 40px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .kpi-card.blue   .kpi-icon { background: var(--blue-soft);   color: var(--blue); }
+  .kpi-card.green  .kpi-icon { background: var(--green-soft);  color: var(--green); }
+  .kpi-card.red    .kpi-icon { background: var(--red-soft);    color: var(--red); }
+  .kpi-card.amber  .kpi-icon { background: var(--amber-soft);  color: var(--amber); }
+  .kpi-card.violet .kpi-icon { background: var(--violet-soft); color: var(--violet); }
+  .kpi-card.cyan   .kpi-icon { background: var(--cyan-soft);   color: var(--cyan); }
+
+  .kpi-label {
+    font-size: .68rem; font-weight: 600; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--ink-3); margin-bottom: .2rem;
+  }
+  .kpi-value {
+    font-size: 1.65rem; font-weight: 600; color: var(--ink);
+    line-height: 1; font-family: 'DM Mono', monospace;
+  }
+  .kpi-sub {
+    font-size: .72rem; color: var(--ink-3); margin-top: .25rem;
+  }
+
+  /* ── Staff number badge row ── */
+  .staff-strip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .staff-strip-inner {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .staff-stat {
+    padding: 1.1rem 1.25rem;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .staff-stat:last-child { border-right: none; }
+  .staff-stat-label {
+    font-size: .65rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--ink-3); margin-bottom: .3rem;
+  }
+  .staff-stat-value {
+    font-size: 1.8rem; font-weight: 600; color: var(--ink);
+    font-family: 'DM Mono', monospace; line-height: 1;
+  }
+  .staff-stat-badge {
+    display: inline-flex; align-items: center; gap: .25rem;
+    font-size: .68rem; font-weight: 500; padding: .2rem .5rem;
+    border-radius: 99px; margin-top: .35rem;
+  }
+  .badge-green { background: var(--green-soft); color: var(--green); }
+  .badge-red   { background: var(--red-soft);   color: var(--red); }
+  .badge-blue  { background: var(--blue-soft);  color: var(--blue); }
+  .badge-amber { background: var(--amber-soft); color: var(--amber); }
+
+  /* ── Data table card ── */
+  .sa-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .sa-card-header {
+    padding: .9rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface);
+  }
+  .sa-card-title {
+    font-size: .8rem; font-weight: 600; color: var(--ink);
+    display: flex; align-items: center; gap: .4rem;
+  }
+  .sa-table { width: 100%; border-collapse: collapse; }
+  .sa-table thead th {
+    font-size: .65rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--ink-3);
+    padding: .6rem 1rem; background: var(--surface-2);
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  .sa-table tbody td {
+    padding: .75rem 1rem; font-size: .8rem; color: var(--ink-2);
+    border-bottom: 1px solid var(--surface-3); vertical-align: middle;
+  }
+  .sa-table tbody tr:last-child td { border-bottom: none; }
+  .sa-table tbody tr:hover td { background: var(--surface-2); }
+
+  .user-cell { display: flex; align-items: center; gap: .6rem; }
+  .user-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--blue-soft); color: var(--blue);
+    font-size: .7rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .user-name { font-weight: 500; color: var(--ink); font-size: .8rem; }
+  .user-handle { font-size: .68rem; color: var(--ink-3); }
+
+  /* ── Quick actions ── */
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: .75rem;
+  }
+  .qa-btn {
+    display: flex; flex-direction: column; align-items: flex-start;
+    gap: .4rem; padding: .9rem 1rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); cursor: pointer;
+    text-decoration: none; color: inherit;
+    box-shadow: var(--shadow); transition: all .15s;
+  }
+  .qa-btn:hover {
+    border-color: var(--blue-mid); background: var(--blue-soft);
+    box-shadow: var(--shadow-md); transform: translateY(-1px); color: inherit;
+  }
+  .qa-icon {
+    width: 32px; height: 32px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .95rem;
+  }
+  .qa-label { font-size: .75rem; font-weight: 600; color: var(--ink); }
+  .qa-desc  { font-size: .65rem; color: var(--ink-3); line-height: 1.3; }
+
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: .3rem;
+  }
+  .dot-green { background: var(--green); }
+  .dot-red   { background: var(--red); }
+
+  @media (max-width: 768px) {
+    .staff-strip-inner { grid-template-columns: repeat(2, 1fr); }
+    .staff-stat { border-bottom: 1px solid var(--border); }
+  }
+</style>
+
+<div class="sa-root">
+
+  <!-- ══ STAFF MANAGEMENT (top priority for superadmin) ══ -->
+  <div class="sa-section-label">Staff Management</div>
+
+  <!-- Staff numbers strip -->
+  <div class="staff-strip mb-3">
+    <div class="staff-strip-inner">
+      <div class="staff-stat">
+        <div class="staff-stat-label">Total Staff</div>
+        <div class="staff-stat-value">{{ total_staff }}</div>
+        <div class="staff-stat-badge badge-blue">
+          <i class="fa-solid fa-users" style="font-size:.6rem"></i> members
+        </div>
+      </div>
+      <div class="staff-stat">
+        <div class="staff-stat-label">Active</div>
+        <div class="staff-stat-value" style="color:var(--green)">{{ active_staff }}</div>
+        <div class="staff-stat-badge badge-green">
+          <span class="status-dot dot-green"></span> online
+        </div>
+      </div>
+      <div class="staff-stat">
+        <div class="staff-stat-label">Disabled</div>
+        <div class="staff-stat-value" style="color:var(--red)">{{ disabled_staff }}</div>
+        <div class="staff-stat-badge badge-red">
+          <span class="status-dot dot-red"></span> inactive
+        </div>
+      </div>
+      <div class="staff-stat">
+        <div class="staff-stat-label">Newest Member</div>
+        <div style="font-size:1rem;font-weight:600;color:var(--ink);margin-top:.2rem;line-height:1.2">
+          {{ newest_staff_name }}
+        </div>
+        <div class="staff-stat-badge badge-amber">
+          <i class="fa-solid fa-clock" style="font-size:.6rem"></i> recent
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent staff table -->
+  <div class="sa-card mb-2">
+    <div class="sa-card-header">
+      <div class="sa-card-title">
+        <i class="fa-solid fa-user-shield" style="color:var(--blue);font-size:.8rem"></i>
+        Recent Staff
+      </div>
+      <a href="{% url 'staff_list' %}" class="btn btn-primary btn-sm"
+         style="font-size:.72rem;padding:.3rem .8rem;border-radius:6px">
+        Manage All →
+      </a>
+    </div>
+    <table class="sa-table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Email</th>
+          <th>Mobile</th>
+          <th>Status</th>
+          <th>Joined</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in recent_staff %}
+        <tr>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar">{{ s.first_name|slice:":1"|upper }}</div>
+              <div>
+                <div class="user-name">{{ s.get_full_name|default:"—" }}</div>
+                <div class="user-handle">@{{ s.username }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ s.email }}</td>
+          <td>{{ s.mobile_number|default:"—" }}</td>
+          <td>
+            {% if s.is_active %}
+              <span><span class="status-dot dot-green"></span>Active</span>
+            {% else %}
+              <span><span class="status-dot dot-red"></span>Disabled</span>
+            {% endif %}
+          </td>
+          <td style="font-family:'DM Mono',monospace;font-size:.72rem">
+            {{ s.date_joined|date:"d M Y" }}
+          </td>
+          <td>
+            <a href="{% url 'edit_staff' s.pk %}"
+               style="font-size:.72rem;color:var(--blue);font-weight:500;text-decoration:none">
+              Edit →
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align:center;padding:2rem;color:var(--ink-3);font-size:.8rem">
+            No staff members yet —
+            <a href="{% url 'add_staff' %}" style="color:var(--blue)">add one now</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ OVERVIEW ══ -->
+  <div class="sa-section-label">Student Overview</div>
+
+  <div class="row g-3 mb-2">
+    <div class="col-6 col-xl-3">
+      <div class="kpi-card blue">
+        <div class="kpi-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div>
+          <div class="kpi-label">Total Students</div>
+          <div class="kpi-value">{{ total_students }}</div>
+          <div class="kpi-sub">{{ active_students }} active</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="kpi-card green">
+        <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div>
+          <div class="kpi-label">Present Today</div>
+          <div class="kpi-value">{{ present_today }}</div>
+          <div class="kpi-sub">{{ absent_today }} absent</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="kpi-card amber">
+        <div class="kpi-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+        <div>
+          <div class="kpi-label">Unpaid Fines</div>
+          <div class="kpi-value">₹{{ unpaid_fines }}</div>
+          <div class="kpi-sub">outstanding balance</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="kpi-card violet">
+        <div class="kpi-icon"><i class="fa-solid fa-star"></i></div>
+        <div>
+          <div class="kpi-label">Reviews / Week</div>
+          <div class="kpi-value">{{ reviews_this_week }}</div>
+          <div class="kpi-sub">{{ pending_works }} works pending</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ QUICK ACTIONS ══ -->
+  <div class="sa-section-label">Quick Actions</div>
+
+  <div class="quick-actions">
+
+    <a href="{% url 'add_staff' %}" class="qa-btn">
+      <div class="kpi-icon" style="background:var(--blue-soft);color:var(--blue)">
+        <i class="fa-solid fa-user-plus"></i>
+      </div>
+      <div class="qa-label">Add Staff</div>
+      <div class="qa-desc">Create a new staff account</div>
+    </a>
+
+    <a href="{% url 'staff_list' %}" class="qa-btn">
+      <div class="kpi-icon" style="background:var(--violet-soft);color:var(--violet)">
+        <i class="fa-solid fa-users-gear"></i>
+      </div>
+      <div class="qa-label">Manage Staff</div>
+      <div class="qa-desc">Edit, disable or remove staff</div>
+    </a>
+
+    <a href="{% url 'add_student' %}" class="qa-btn">
+      <div class="kpi-icon" style="background:var(--green-soft);color:var(--green)">
+        <i class="fa-solid fa-user-graduate"></i>
+      </div>
+      <div class="qa-label">Add Student</div>
+      <div class="qa-desc">Enroll a new student</div>
+    </a>
+
+    <a href="{% url 'staff_students' %}" class="qa-btn">
+      <div class="kpi-icon" style="background:var(--cyan-soft);color:var(--cyan)">
+        <i class="fa-solid fa-users"></i>
+      </div>
+      <div class="qa-label">All Students</div>
+      <div class="qa-desc">View and manage students</div>
+    </a>
+
+    <a href="{% url 'staff_review_list' %}" class="qa-btn">
+      <div class="kpi-icon" style="background:var(--amber-soft);color:var(--amber)">
+        <i class="fa-solid fa-star"></i>
+      </div>
+      <div class="qa-label">Reviews</div>
+      <div class="qa-desc">Manage review sessions</div>
+    </a>
+
+    <a href="{% url 'fines' %}" class="qa-btn">
+      <div class="kpi-icon" style="background:var(--red-soft);color:var(--red)">
+        <i class="fa-solid fa-money-bill-wave"></i>
+      </div>
+      <div class="qa-label">Fines</div>
+      <div class="qa-desc">View unpaid penalties</div>
+    </a>
+
+    <a href="{% url 'staff_attendance' %}" class="qa-btn">
+      <div class="kpi-icon" style="background:var(--green-soft);color:var(--green)">
+        <i class="fa-solid fa-calendar-check"></i>
+      </div>
+      <div class="qa-label">Attendance</div>
+      <div class="qa-desc">Today's attendance log</div>
+    </a>
+
+    <a href="{% url 'manage_works' %}" class="qa-btn">
+      <div class="kpi-icon" style="background:var(--violet-soft);color:var(--violet)">
+        <i class="fa-solid fa-briefcase"></i>
+      </div>
+      <div class="qa-label">Works</div>
+      <div class="qa-desc">Manage submissions</div>
+    </a>
+
+  </div>
+
+</div>
+{% endblock %}

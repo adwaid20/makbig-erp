@@ -11,104 +11,171 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Bootstrap Icons (for bell if needed, though we used FA mostly) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
     <link rel="stylesheet" href="{% static 'css/attendance.css' %}">
 
     <style>
         :root {
-            --sidebar-width: 220px;
-            --topbar-height: 70px;
-            --primary-soft: #eef4ff;
-            --text-heading: #344767;
-            --text-muted: #67748e;
+            --sidebar-width: 230px;
+            --topbar-height: 64px;
+            --primary: #2563eb;
+            --primary-soft: #eff6ff;
+            --primary-mid: #bfdbfe;
+            --text-heading: #0d1117;
+            --text-body: #374151;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --surface: #ffffff;
+            --surface-2: #f9fafb;
+            --surface-3: #f3f4f6;
+            --red: #dc2626;
+            --red-soft: #fef2f2;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04);
+            --radius: 10px;
         }
+
+        * { box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-            color: #495057;
+            font-family: 'DM Sans', sans-serif;
+            background-color: #f1f5f9;
+            color: var(--text-body);
+            margin: 0;
+            font-size: 1rem;
         }
 
-        /* --- Sidebar --- */
+        /* ══════════════════════════════
+           SIDEBAR
+        ══════════════════════════════ */
         .sidebar {
             width: var(--sidebar-width);
-            background: #fff;
-            border-right: 1px solid rgba(0, 0, 0, 0.05);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
+            top: 0; bottom: 0; left: 0;
             z-index: 1045;
-            /* Below modal/offcanvas backdrop but above content */
-            transition: transform 0.3s ease-in-out;
+            transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+            box-shadow: var(--shadow-sm);
         }
 
         .sidebar-brand {
             height: var(--topbar-height);
             display: flex;
             align-items: center;
-            padding: 0 1.5rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 0 1.25rem;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .brand-icon {
+            width: 36px; height: 36px;
+            background: var(--primary);
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(37,99,235,.35);
+        }
+        .brand-text {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-left: .65rem;
+            letter-spacing: -.01em;
         }
 
         .sidebar-nav {
-            padding: 1.5rem 1rem;
-            flex-grow: 1;
+            padding: 1rem .75rem;
+            flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .sidebar-nav::-webkit-scrollbar { width: 3px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+        .nav-section-label {
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: .5rem .6rem .3rem;
+            margin-top: .25rem;
         }
 
         .nav-link {
             display: flex;
             align-items: center;
-            padding: 0.8rem 1rem;
+            padding: .65rem .75rem;
             color: var(--text-muted);
             font-weight: 500;
-            border-radius: 0.5rem;
-            margin-bottom: 0.25rem;
-            transition: all 0.2s;
+            font-size: 1rem;
+            border-radius: 8px;
+            margin-bottom: .15rem;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            gap: .7rem;
         }
-
-        .nav-link:hover,
+        .nav-link i {
+            width: 20px; text-align: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .nav-link:hover {
+            background-color: var(--surface-3);
+            color: var(--text-heading);
+        }
         .nav-link.active {
             background-color: var(--primary-soft);
-            color: #0d6efd;
-            /* Bootstrap Primary */
-            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .nav-link.active i { color: var(--primary); }
+
+        .nav-link.danger { color: var(--text-muted); }
+        .nav-link.danger:hover {
+            background-color: var(--red-soft);
+            color: var(--red);
         }
 
-        .nav-link i {
-            width: 24px;
-            text-align: center;
-            margin-right: 0.75rem;
-            font-size: 1.1rem;
+        .nav-divider {
+            height: 1px; background: var(--border);
+            margin: .75rem .5rem;
+            opacity: .6;
         }
 
-        .nav-link.text-danger:hover {
-            background-color: #fff5f5;
-            color: #dc3545;
+        .sidebar-footer {
+            padding: .75rem;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
         }
 
-        /* --- Main Content --- */
+        /* ══════════════════════════════
+           MAIN WRAPPER
+        ══════════════════════════════ */
         .main-wrapper {
             margin-left: var(--sidebar-width);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            transition: margin-left 0.3s ease-in-out;
+            transition: margin-left 0.25s cubic-bezier(.4,0,.2,1);
         }
 
-        /* --- Topbar --- */
+        /* ══════════════════════════════
+           TOPBAR
+        ══════════════════════════════ */
         .topbar {
             height: var(--topbar-height);
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(255,255,255,.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
             padding: 0 1.5rem;
             display: flex;
             align-items: center;
@@ -116,192 +183,359 @@
             position: sticky;
             top: 0;
             z-index: 1020;
+            gap: 1rem;
         }
 
-        /* --- Mobile Responsive --- */
+        .topbar-left {
+            display: flex; align-items: center; gap: .75rem;
+            min-width: 0; flex: 1;
+        }
+        .topbar-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin: 0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .topbar-right {
+            display: flex; align-items: center; gap: .5rem;
+            flex-shrink: 0;
+        }
+
+        /* Notification bell */
+        .topbar-icon-btn {
+            width: 38px; height: 38px;
+            border-radius: 9px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); font-size: 1rem;
+            text-decoration: none; transition: all .15s;
+            position: relative; flex-shrink: 0;
+        }
+        .topbar-icon-btn:hover {
+            background: var(--surface-3);
+            color: var(--text-heading);
+            border-color: #d1d5db;
+        }
+        .notif-dot {
+            position: absolute; top: 6px; right: 6px;
+            width: 7px; height: 7px;
+            background: var(--red); border-radius: 50%;
+            border: 1.5px solid var(--surface);
+        }
+
+        /* Divider */
+        .topbar-sep {
+            width: 1px; height: 24px;
+            background: var(--border); flex-shrink: 0;
+        }
+
+        /* Profile area */
+        .profile-area {
+            display: flex; align-items: center; gap: .6rem;
+            cursor: default;
+        }
+        .profile-text { text-align: right; }
+        .profile-name {
+            font-size: .9rem;
+            font-weight: 600;
+            color: var(--text-heading);
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .profile-role {
+            font-size: .75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .profile-role.is-super {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .profile-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff; font-size: .9rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 2px var(--primary-mid);
+        }
+
+        /* ── Quick Logout Button ── */
+        .topbar-logout-btn {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .42rem .85rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: .85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer; transition: all .15s;
+            white-space: nowrap; flex-shrink: 0;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .topbar-logout-btn:hover {
+            background: var(--red-soft);
+            border-color: #fecaca;
+            color: var(--red);
+        }
+        .topbar-logout-btn i { font-size: .8rem; }
+
+        /* ── Mobile toggle ── */
+        .sidebar-toggle {
+            width: 38px; height: 38px; border-radius: 9px;
+            background: var(--surface-2); border: 1px solid var(--border);
+            display: none; align-items: center; justify-content: center;
+            color: var(--text-muted); font-size: 1rem;
+            cursor: pointer; transition: all .15s; flex-shrink: 0;
+        }
+        .sidebar-toggle:hover { background: var(--surface-3); color: var(--text-heading); }
+
+        /* ══════════════════════════════
+           CONTENT
+        ══════════════════════════════ */
+        .content-area {
+            padding: 1.5rem;
+            flex: 1;
+        }
+
+        /* ══════════════════════════════
+           MOBILE RESPONSIVE
+        ══════════════════════════════ */
         @media (max-width: 991.98px) {
             .sidebar {
                 transform: translateX(-100%);
+                box-shadow: none;
             }
-
             .sidebar.show {
                 transform: translateX(0);
-                box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 0 40px rgba(0,0,0,.12);
             }
-
-            .main-wrapper {
-                margin-left: 0;
-            }
+            .main-wrapper { margin-left: 0; }
+            .sidebar-toggle { display: flex; }
+            .profile-text { display: none; }
+            .topbar { padding: 0 1rem; }
+            .content-area { padding: 1rem; }
         }
 
-        /* Backdrop for mobile sidebar */
+        @media (max-width: 480px) {
+            .topbar-logout-btn span { display: none; }
+            .topbar-logout-btn { padding: .42rem .6rem; }
+        }
+
+        /* Backdrop */
         .sidebar-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
-            z-index: 1040;
-            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.25);
+            z-index: 1040; display: none;
+            backdrop-filter: blur(2px);
         }
-
-        .sidebar-backdrop.show {
-            display: block;
-        }
+        .sidebar-backdrop.show { display: block; }
     </style>
 </head>
 
 <body>
 
-
-
-    <!-- Mobile Sidebar Backdrop (Custom implementation for simplicity without full BS offcanvas heavy markup if preferred, but using standard pattern) -->
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
 
-    <!-- SIDEBAR -->
+    <!-- ══ SIDEBAR ══ -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <a href="#" class="text-decoration-none d-flex align-items-center gap-2 text-dark fs-5 fw-bold">
-                <div class="bg-primary bg-opacity-10 text-primary rounded px-2 py-1">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                </div>
-                <span>Makbig Admin</span>
-            </a>
+            <div class="brand-icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <span class="brand-text">Makbig Admin</span>
         </div>
 
         <nav class="sidebar-nav">
-            <div class="small fw-bold text-uppercase text-muted mb-2 px-3"
-                style="font-size: 0.7rem; letter-spacing: 0.5px;">Menu</div>
 
-            <a href="{% url 'staff_dashboard' %}"
-                class="nav-link {% if request.resolver_match.url_name == 'staff_dashboard' %}active{% endif %}">
+            <div class="nav-section-label">Main</div>
+
+            <a href="{% if request.user.is_superadmin %}{% url 'dashboard' %}{% else %}{% url 'staff_dashboard' %}{% endif %}"
+               class="nav-link {% if request.resolver_match.url_name == 'staff_dashboard' or request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                 <i class="fa-solid fa-chart-line"></i> Dashboard
             </a>
 
             <a href="{% url 'staff_students' %}"
-                class="nav-link {% if request.resolver_match.url_name == 'staff_students' %}active{% endif %}">
-                <i class="fa-solid fa-users"></i> Users
+               class="nav-link {% if request.resolver_match.url_name == 'staff_students' %}active{% endif %}">
+                <i class="fa-solid fa-users"></i> Students
+            </a>
+            </a>
+ <a href="{% url 'course_list' %}" class="nav-link">
+                <i class="fa-solid fa-money-bill-wave"></i> Courses
             </a>
 
             <a href="{% url 'staff_review_list' %}"
-                class="nav-link {% if request.resolver_match.url_name == 'staff_review_list' %}active{% endif %}">
+               class="nav-link {% if request.resolver_match.url_name == 'staff_review_list' %}active{% endif %}">
                 <i class="fa-solid fa-star"></i> Reviews
             </a>
 
             <a href="{% url 'staff_attendance' %}"
-                class="nav-link {% if request.resolver_match.url_name == 'staff_attendance' %}active{% endif %}">
+               class="nav-link {% if request.resolver_match.url_name == 'staff_attendance' %}active{% endif %}">
                 <i class="fa-solid fa-calendar-check"></i> Attendance
             </a>
 
-            <div class="my-3 border-top mx-3 opacity-25"></div>
-            <div class="small fw-bold text-uppercase text-muted mb-2 px-3"
-                style="font-size: 0.7rem; letter-spacing: 0.5px;">Finance</div>
+            
 
-            <a href="{% url "reviewer_payment_dashboard" %}" class="nav-link">
-                <i class="fa-solid fa-briefcase"></i> Reviewer Payment
+            <div class="nav-divider"></div>
+            <div class="nav-section-label">Finance</div>
+
+            <a href="{% url 'reviewer_payment_dashboard' %}" class="nav-link">
+                <i class="fa-solid fa-hand-holding-dollar"></i> Reviewer Pay
             </a>
 
-            <a href="{% url "manage_works" %}" class="nav-link">
+            <a href="{% url 'manage_works' %}" class="nav-link">
                 <i class="fa-solid fa-briefcase"></i> Works
             </a>
 
-            <a href="{% url "fines" %}" class="nav-link">
+            <a href="{% url 'fines' %}" class="nav-link">
                 <i class="fa-solid fa-money-bill-wave"></i> Fines
-            </a>
+            
 
-            <div class="mt-auto pt-4">
-                <form method="POST" action="{% url 'student_logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="nav-link w-100 text-danger border-0 bg-transparent">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout
-                    </button>
-                </form>
-            </div>
+            
+            
+    
+
+
+            <!-- SUPERADMIN ONLY -->
+            {% if request.user.is_superadmin %}
+            <div class="nav-divider"></div>
+            <div class="nav-section-label">Super Admin</div>
+
+            <a href="{% url 'staff_list' %}"
+               class="nav-link {% if request.resolver_match.url_name == 'staff_list' or request.resolver_match.url_name == 'add_staff' or request.resolver_match.url_name == 'edit_staff' %}active{% endif %}">
+                <i class="fa-solid fa-user-shield"></i> Manage Staff
+            </a>
+            {% endif %}
+
         </nav>
+
+        <div class="sidebar-footer">
+            <form method="POST" action="{% url 'staff_logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="nav-link danger w-100 border-0 bg-transparent">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </form>
+        </div>
     </aside>
 
-    <!-- MAIN WRAPPER -->
+    <!-- ══ MAIN WRAPPER ══ -->
     <div class="main-wrapper">
 
-        <!-- TOP NAVBAR -->
+        <!-- ── TOPBAR ── -->
         <header class="topbar">
-            <div class="d-flex align-items-center gap-3">
-                <!-- Mobile Toggle -->
-                <button class="btn btn-light d-lg-none" onclick="toggleSidebar()">
+
+            <div class="topbar-left">
+                <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
                     <i class="fa-solid fa-bars"></i>
                 </button>
-                <h5 class="mb-0 fw-bold text-dark">{% block page_title %}Dashboard{% endblock %}</h5>
+                <h5 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h5>
             </div>
 
-            <div class="d-flex align-items-center gap-3">
+            <div class="topbar-right">
 
-                <!-- Notifications -->
-                <a href="{% url 'staff_ticket_list' %}"
-                    class="btn btn-light rounded-circle position-relative border-0 shadow-sm"
-                    style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                    <i class="bi bi-bell fs-5 text-secondary"></i>
+                <!-- Notification bell -->
+                <a href="{% url 'staff_ticket_list' %}" class="topbar-icon-btn" title="Tickets">
+                    <i class="bi bi-bell"></i>
                     {% if ticket_notification_count > 0 %}
-                    <span
-                        class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
-                        <span class="visually-hidden">New alerts</span>
-                    </span>
+                        <span class="notif-dot"></span>
                     {% endif %}
                 </a>
 
-                <div class="vr h-50 mx-1 opacity-25"></div>
+                <div class="topbar-sep"></div>
 
                 <!-- Profile -->
-                <div class="d-flex align-items-center gap-2">
-                    <div class="text-end d-none d-sm-block">
-                        <div class="fw-bold small text-dark lh-1">{{ request.user.first_name }} {{request.user.last_name }}</div>
-                        <div class="text-muted" style="font-size: 0.7rem;">Staff Admin</div>
+                <div class="profile-area">
+                    <div class="profile-text">
+                        <div class="profile-name">
+                            {{ request.user.first_name }} {{ request.user.last_name }}
+                        </div>
+                        <div class="profile-role {% if request.user.is_superadmin %}is-super{% endif %}">
+                            {% if request.user.is_superadmin %}
+                                <i class="fa-solid fa-shield-halved" style="font-size:.65rem;margin-right:.2rem"></i>Super Admin
+                            {% else %}
+                                Staff Admin
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold shadow-sm"
-                        style="width:40px;height:40px; font-size: 1rem;">
+                    <div class="profile-avatar">
                         {{ request.user.first_name|slice:":1"|upper }}
                     </div>
                 </div>
+
+                <div class="topbar-sep"></div>
+
+                <!-- Quick Logout -->
+                <form method="POST" action="{% url 'staff_logout' %}" style="margin:0">
+                    {% csrf_token %}
+                    <button type="submit" class="topbar-logout-btn" title="Logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+
             </div>
         </header>
 
-        <!-- CONTENT AREA -->
-        <div class="p-4">
+        <!-- ── CONTENT AREA ── -->
+        <div class="content-area">
+
             <!-- Messages -->
             {% if messages %}
-<div style="margin-bottom:1.25rem">
-  {% for message in messages %}
-  <div style="
-    display:flex;align-items:center;gap:.7rem;
-    padding:.75rem 1rem;margin-bottom:.5rem;
-    border-radius:8px;font-size:.85rem;font-weight:500;
-    font-family:'Plus Jakarta Sans',system-ui,sans-serif;
-    {% if 'error' in message.tags %}background:#fff1f2;color:#9f1239;border:1px solid #fda4af;
-    {% elif 'success' in message.tags %}background:#f0fdf4;color:#15803d;border:1px solid #86efac;
-    {% elif 'warning' in message.tags %}background:#fffbeb;color:#92400e;border:1px solid #fcd34d;
-    {% else %}background:#eff6ff;color:#1d4ed8;border:1px solid #93c5fd;{% endif %}
-  " id="msg-{{ forloop.counter }}">
-    <span style="flex:1">{{ message }}</span>
-    <button onclick="document.getElementById('msg-{{ forloop.counter }}').remove()"
-            style="background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:.5;color:inherit;padding:0">&times;</button>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
-{% block content %}
-{% endblock %}
-        </div>
+            <div style="margin-bottom:1.1rem">
+                {% for message in messages %}
+                <div style="
+                    display:flex; align-items:center; gap:.65rem;
+                    padding:.75rem 1rem; margin-bottom:.4rem;
+                    border-radius:9px; font-size:.9rem; font-weight:500;
+                    font-family:'DM Sans',sans-serif;
+                    {% if 'error' in message.tags %}
+                        background:#fef2f2; color:#991b1b; border:1px solid #fecaca;
+                    {% elif 'success' in message.tags %}
+                        background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;
+                    {% elif 'warning' in message.tags %}
+                        background:#fffbeb; color:#92400e; border:1px solid #fde68a;
+                    {% else %}
+                        background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;
+                    {% endif %}
+                " id="msg-{{ forloop.counter }}">
+                    <span style="flex:1">{{ message }}</span>
+                    <button
+                        onclick="document.getElementById('msg-{{ forloop.counter }}').remove()"
+                        style="background:none;border:none;cursor:pointer;font-size:1.1rem;
+                               opacity:.45;color:inherit;padding:0;line-height:1;flex-shrink:0">
+                        &times;
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
+            {% block content %}{% endblock %}
+
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('sidebarBackdrop');
-            sidebar.classList.toggle('show');
-            backdrop.classList.toggle('show');
+            document.getElementById('sidebar').classList.toggle('show');
+            document.getElementById('sidebarBackdrop').classList.toggle('show');
         }
+
+        /* Auto-dismiss messages after 5s */
+        document.querySelectorAll('[id^="msg-"]').forEach(function(el) {
+            setTimeout(function() {
+                el.style.transition = 'opacity .4s';
+                el.style.opacity = '0';
+                setTimeout(function() { el.remove(); }, 400);
+            }, 5000);
+        });
     </script>
 </body>
 

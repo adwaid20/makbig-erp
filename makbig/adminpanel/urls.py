@@ -17,6 +17,16 @@ urlpatterns = [
     path('student/forgot-password/', views.student_forget_password, name='student_forgot_password'),
     path('student/reset/<uidb64>/<str:token>/', views.student_reset_password, name='student_reset_password'),
     path("student/profile/", views.student_profile, name="student_profile"),
-    path("students/<int:student_id>/toggle-status/",views.toggle_student_status,name="toggle_student_status")
+    path("students/<int:student_id>/toggle-status/",views.toggle_student_status,name="toggle_student_status"),
+    path('courses/', views.course_list_create, name='course_list'),
+
+
+
+    path('superadmin/', views.superadmin_dashboard, name='dashboard'),
+    path('superadmin/staff/',views.superadmin_staff_list, name='staff_list'),
+    path('superadmin/staff/add/',views.superadmin_add_staff, name='add_staff'),
+    path('superadmin/staff/<int:pk>/edit/',views.edit_staff, name='edit_staff'),
+    path('superadmin/staff/<int:pk>/toggle/',views.toggle_staff, name='toggle_staff'),
+    path('superadmin/staff/<int:pk>/delete/',views.delete_staff, name='delete_staff'),
 ]
 
