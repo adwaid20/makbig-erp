@@ -2,14 +2,14 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Sum
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator,MinValueValidator,MaxValueValidator
+from django.core.validators import RegexValidator,MinValueValidator,MaxValueValidator,MaxLengthValidator
 from decimal import Decimal
 
 
 
 # Create your models here.
 
-name_validator=RegexValidator(regex=r'^[A-Za-z]+$', message="Only alphabetic characters are allowed.")
+name_validator=RegexValidator(regex=r'^[A-Za-z ]{1,100}$', message="Only alphabetic characters are allowed.")
 
 mobile_validator=RegexValidator(regex=r'^\d{10}$', message="Mobile number must contain only digits and must havee 10 digits")
 
@@ -23,7 +23,7 @@ class User(AbstractUser):
 )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     email=models.EmailField(unique=True,db_index=True)
-    mobile_number = models.CharField(max_length=15, blank=True, null=True,validators=[mobile_validator])
+    mobile_number = models.CharField(max_length=10, blank=True, null=True,validators=[mobile_validator])
     
     first_name = models.CharField(max_length=100,validators=[name_validator])
     last_name = models.CharField(max_length=100,validators=[name_validator])
@@ -34,7 +34,7 @@ class User(AbstractUser):
 
     @property
     def is_superadmin(self):                  # ← ADD THIS — used by decorator
-        return self.role == 'superadmin'
+        return self.is_superuser
 
 
     def clean(self):
@@ -43,6 +43,9 @@ class User(AbstractUser):
 
     def save(self,*args, **kwargs):
         self.email=self.email.lower().strip()
+        if self.is_superuser:
+            self.role = 'superadmin'
+        self.full_clean()
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -50,9 +53,13 @@ class User(AbstractUser):
     
 
 class Course(models.Model):
-    name=models.CharField(max_length=200)
-    description=models.TextField(blank=True,null=True, max_length=2000)
+    name=models.CharField(max_length=200,validators=[name_validator])
+    description=models.TextField(blank=True,null=True,     validators=[MaxLengthValidator(2000)])
     duration_months=models.PositiveIntegerField(default=6,validators=[MinValueValidator(1),MaxValueValidator(60)])
+
+    def save(self, *args, **kwargs):
+        self.full_clean()   # enforces validators(thats why we altered the way saving happens)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -64,6 +71,10 @@ class StudentProfile(models.Model):
     is_active = models.BooleanField(default=True)
     enrollment_date=models.DateField(auto_now_add=True)
     progress_percent=models.DecimalField(max_digits=5, decimal_places=2, default=0,validators=[MinValueValidator(Decimal('0.00')),MaxValueValidator(Decimal('100.00'))])
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
     def __str__(self):

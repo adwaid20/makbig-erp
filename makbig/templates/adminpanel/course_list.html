@@ -1,0 +1,50 @@
+{% extends "layouts/staff_layout.html" %}
+
+{% block content %}
+
+<h2>Add Course</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <div>
+        <label>Name</label><br>
+        {{ form.name }}
+    </div>
+
+    <div>
+        <label>Description</label><br>
+        {{ form.description }}
+    </div>
+
+    <div>
+        <label>Duration (months)</label><br>
+        {{ form.duration_months }}
+    </div>
+
+    <button type="submit">Add Course</button>
+</form>
+
+<hr>
+
+<h2>All Courses</h2>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Duration</th>
+    </tr>
+
+    {% for course in courses %}
+    <tr>
+        <td>{{ course.name }}</td>
+        <td>{{ course.duration_months }} months</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="2">No courses available</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

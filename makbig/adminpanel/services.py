@@ -1,4 +1,4 @@
-from .models import User, StudentProfile
+from .models import User, StudentProfile,Course
 from django.db import transaction
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
@@ -119,3 +119,47 @@ class DashboardService:
         cache.set(DASHBOARD_CACHE_KEY, data, DASHBOARD_CACHE_TIMEOUT)
 
         return data
+
+
+# adminpanel/services.py — ADD AT THE BOTTOM
+
+SUPERADMIN_CACHE_KEY = "superadmin:dashboard_summary"
+SUPERADMIN_CACHE_TIMEOUT = 60
+
+
+def invalidate_superadmin_cache():
+    cache.delete(SUPERADMIN_CACHE_KEY)
+
+
+class SuperAdminDashboardService:
+
+    @classmethod
+    def get_dashboard_summary(cls):
+        cached = cache.get(SUPERADMIN_CACHE_KEY)
+        if cached is not None:
+            return cached
+
+        staff_qs = User.objects.filter(is_staff=True, is_superuser=False)
+        newest = staff_qs.order_by('-date_joined').first()
+
+        data = {
+            'total_staff':    staff_qs.count(),
+            'active_staff':   staff_qs.filter(is_active=True).count(),
+            'disabled_staff': staff_qs.filter(is_active=False).count(),
+            'recent_staff':   list(staff_qs.order_by('-date_joined')[:5]),
+            'newest_staff': newest,
+            'newest_staff_name': (newest.get_full_name() or newest.username) if newest else "—",
+        }
+
+        cache.set(SUPERADMIN_CACHE_KEY, data, SUPERADMIN_CACHE_TIMEOUT)
+        return data
+    
+class CourseService:
+
+    @staticmethod
+    def create_course(data):
+        return Course.objects.create(**data)
+
+    @staticmethod
+    def get_all_courses():
+        return Course.objects.all().order_by('-id')

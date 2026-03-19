@@ -1,0 +1,207 @@
+{% extends 'layouts/staff_layout.html' %}
+{% block title %}Edit Staff{% endblock %}
+{% block page_title %}Edit Staff{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  .sf-root {
+    font-family: 'DM Sans', sans-serif;
+    --ink: #0d1117; --ink-2: #374151; --ink-3: #6b7280;
+    --surface: #ffffff; --surface-2: #f9fafb; --border: #e5e7eb;
+    --blue: #2563eb; --blue-soft: #eff6ff; --blue-mid: #bfdbfe;
+    --amber: #d97706; --amber-soft: #fffbeb;
+    --red: #dc2626; --red-soft: #fef2f2;
+    --green: #16a34a; --green-soft: #f0fdf4;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow-md: 0 4px 16px rgba(0,0,0,.08);
+  }
+
+  .sf-wrap { max-width: 560px; }
+
+  .sf-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-md); overflow: hidden;
+  }
+  .sf-card-header {
+    padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border);
+    background: var(--surface-2); display: flex; align-items: center; gap: .75rem;
+  }
+  .sf-header-icon {
+    width: 36px; height: 36px; border-radius: var(--radius-sm);
+    background: var(--amber-soft); color: var(--amber);
+    display: flex; align-items: center; justify-content: center; font-size: .9rem;
+  }
+  .sf-header-title { font-size: .875rem; font-weight: 600; color: var(--ink); }
+  .sf-header-sub   { font-size: .7rem; color: var(--ink-3); margin-top: .1rem;
+                     font-family: 'DM Mono', monospace; }
+
+  .sf-card-body { padding: 1.5rem; }
+
+  .sf-field { margin-bottom: 1.1rem; }
+  .sf-label {
+    display: block; font-size: .72rem; font-weight: 600;
+    color: var(--ink-2); margin-bottom: .35rem; letter-spacing: .02em;
+  }
+  .sf-label .req { color: var(--red); margin-left: .15rem; }
+  .sf-field input, .sf-field select {
+    width: 100%; padding: .55rem .85rem;
+    font-size: .82rem; font-family: 'DM Sans', sans-serif;
+    color: var(--ink); background: var(--surface);
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  .sf-field input:focus, .sf-field select:focus {
+    border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+  }
+  .sf-field input::placeholder { color: #9ca3af; }
+  .sf-help {
+    font-size: .68rem; color: var(--ink-3); margin-top: .3rem;
+    display: flex; align-items: flex-start; gap: .3rem;
+  }
+  .sf-error {
+    font-size: .7rem; color: var(--red); margin-top: .3rem;
+    display: flex; align-items: flex-start; gap: .3rem;
+    background: var(--red-soft); padding: .3rem .6rem;
+    border-radius: 6px; border-left: 3px solid var(--red);
+  }
+  .sf-divider {
+    height: 1px; background: var(--border); margin: 1.25rem 0; position: relative;
+  }
+  .sf-divider-label {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    background: var(--surface); padding: 0 .75rem;
+    font-size: .65rem; font-weight: 600; color: var(--ink-3);
+    text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
+  }
+  .sf-footer {
+    padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+    background: var(--surface-2); display: flex; align-items: center; gap: .6rem;
+  }
+  .btn-save {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--amber); color: #fff;
+    font-size: .78rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    padding: .55rem 1.25rem; border-radius: var(--radius-sm);
+    border: none; cursor: pointer; transition: background .15s, box-shadow .15s;
+    box-shadow: 0 1px 3px rgba(217,119,6,.3);
+  }
+  .btn-save:hover { background: #b45309; box-shadow: 0 4px 10px rgba(217,119,6,.35); }
+  .btn-cancel {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: transparent; color: var(--ink-3);
+    font-size: .78rem; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    padding: .55rem 1rem; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); cursor: pointer;
+    text-decoration: none; transition: all .15s;
+  }
+  .btn-cancel:hover { border-color: #9ca3af; color: var(--ink-2); background: var(--surface-2); }
+  .non-field-error {
+    margin-bottom: 1rem; padding: .65rem .9rem;
+    background: var(--red-soft); border: 1px solid #fecaca;
+    border-radius: var(--radius-sm); font-size: .75rem;
+    color: var(--red); display: flex; align-items: flex-start; gap: .4rem;
+  }
+  .sf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 480px) { .sf-row { grid-template-columns: 1fr; } }
+
+  /* Staff info chip */
+  .staff-chip {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 99px; padding: .3rem .75rem;
+    font-size: .72rem; color: var(--ink-2); margin-bottom: 1.25rem;
+  }
+  .staff-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
+</style>
+
+<div class="sf-root">
+  <div class="sf-wrap">
+    <div class="sf-card">
+      <div class="sf-card-header">
+        <div class="sf-header-icon">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </div>
+        <div>
+          <div class="sf-header-title">Edit Staff Member</div>
+          <div class="sf-header-sub">{{ staff.email }}</div>
+        </div>
+      </div>
+
+      <div class="sf-card-body">
+
+        <div class="staff-chip">
+          <span class="staff-chip-dot"></span>
+          Editing: <strong>{{ staff.get_full_name|default:staff.username }}</strong>
+        </div>
+
+        <form method="post" novalidate id="edit-form">
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+              <div class="non-field-error">
+                <i class="fa-solid fa-triangle-exclamation" style="margin-top:.1rem;flex-shrink:0"></i>
+                {{ error }}
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <div class="sf-row">
+            {% for field in form %}
+              {% if field.name == 'first_name' or field.name == 'last_name' %}
+                <div class="sf-field">
+                  <label class="sf-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  {% for error in field.errors %}
+                    <div class="sf-error">
+                      <i class="fa-solid fa-triangle-exclamation" style="margin-top:.1rem;font-size:.65rem;flex-shrink:0"></i>
+                      {{ error }}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          {% for field in form %}
+            {% if field.name != 'first_name' and field.name != 'last_name' %}
+              <div class="sf-field">
+                <label class="sf-label" for="{{ field.id_for_label }}">
+                  {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                  <div class="sf-help">
+                    <i class="fa-solid fa-circle-info" style="margin-top:.1rem;font-size:.6rem;flex-shrink:0"></i>
+                    {{ field.help_text }}
+                  </div>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="sf-error">
+                    <i class="fa-solid fa-triangle-exclamation" style="margin-top:.1rem;font-size:.65rem;flex-shrink:0"></i>
+                    {{ error }}
+                  </div>
+                {% endfor %}
+                {% if field.name == 'email' %}
+                  <div class="sf-divider"><span class="sf-divider-label">Change Password (optional)</span></div>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+
+        </form>
+      </div>
+
+      <div class="sf-footer">
+        <button type="submit" form="edit-form" class="btn-save">
+          <i class="fa-solid fa-floppy-disk" style="font-size:.65rem"></i>
+          Save Changes
+        </button>
+        <a href="{% url 'staff_list' %}" class="btn-cancel">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

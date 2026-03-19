@@ -1,0 +1,319 @@
+{% extends 'layouts/staff_layout.html' %}
+{% block title %}Staff Members{% endblock %}
+{% block page_title %}Staff Members{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  .sl-root {
+    font-family: 'DM Sans', sans-serif;
+    --ink: #0d1117;
+    --ink-2: #374151;
+    --ink-3: #6b7280;
+    --surface: #ffffff;
+    --surface-2: #f9fafb;
+    --surface-3: #f3f4f6;
+    --border: #e5e7eb;
+    --blue: #2563eb;
+    --blue-soft: #eff6ff;
+    --blue-mid: #bfdbfe;
+    --green: #16a34a;
+    --green-soft: #f0fdf4;
+    --red: #dc2626;
+    --red-soft: #fef2f2;
+    --amber: #d97706;
+    --amber-soft: #fffbeb;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04);
+  }
+
+  .sl-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .sl-title { font-size: 1rem; font-weight: 600; color: var(--ink); margin: 0; }
+  .sl-subtitle { font-size: .72rem; color: var(--ink-3); margin-top: .15rem; }
+
+  .sl-add-btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--blue); color: #fff; font-size: .75rem;
+    font-weight: 600; padding: .5rem 1rem; border-radius: var(--radius-sm);
+    text-decoration: none; transition: background .15s, box-shadow .15s;
+    box-shadow: 0 1px 3px rgba(37,99,235,.3); white-space: nowrap;
+  }
+  .sl-add-btn:hover { background: #1d4ed8; color: #fff; box-shadow: 0 4px 10px rgba(37,99,235,.35); }
+
+  .sl-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  /* ── Scrollable table wrapper ── */
+  .sl-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  .sl-table { width: 100%; border-collapse: collapse; min-width: 680px; }
+  .sl-table thead th {
+    font-size: .63rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--ink-3);
+    padding: .65rem 1rem; background: var(--surface-2);
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  .sl-table thead th:first-child { padding-left: 1.5rem; }
+  .sl-table tbody td {
+    padding: .85rem 1rem; font-size: .8rem; color: var(--ink-2);
+    border-bottom: 1px solid var(--surface-3); vertical-align: middle;
+  }
+  .sl-table tbody td:first-child { padding-left: 1.5rem; }
+  .sl-table tbody tr:last-child td { border-bottom: none; }
+  .sl-table tbody tr { transition: background .1s; }
+  .sl-table tbody tr:hover td { background: var(--surface-2); }
+
+  .user-cell { display: flex; align-items: center; gap: .65rem; }
+  .user-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--blue-soft); color: var(--blue);
+    font-size: .75rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; border: 1.5px solid var(--blue-mid);
+  }
+  .user-name { font-weight: 600; color: var(--ink); font-size: .8rem; line-height: 1.2; }
+  .user-handle { font-size: .68rem; color: var(--ink-3); }
+
+  .mono { font-family: 'DM Mono', monospace; font-size: .75rem; }
+
+  .status-pill {
+    display: inline-flex; align-items: center; gap: .3rem;
+    font-size: .68rem; font-weight: 600; padding: .22rem .6rem;
+    border-radius: 99px;
+  }
+  .status-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .pill-active  { background: var(--green-soft); color: var(--green); }
+  .pill-active .status-dot  { background: var(--green); }
+  .pill-disabled { background: #f3f4f6; color: var(--ink-3); }
+  .pill-disabled .status-dot { background: var(--ink-3); }
+
+  .action-group { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+
+  .act-btn {
+    font-size: .7rem; font-weight: 600; padding: .28rem .7rem;
+    border-radius: 6px; border: 1.5px solid; cursor: pointer;
+    text-decoration: none; transition: all .15s; background: transparent;
+    display: inline-flex; align-items: center; gap: .25rem; white-space: nowrap;
+  }
+  .act-edit    { color: var(--blue);  border-color: var(--blue-mid); }
+  .act-edit:hover  { background: var(--blue-soft); color: var(--blue); }
+  .act-disable { color: var(--amber); border-color: #fde68a; }
+  .act-disable:hover { background: var(--amber-soft); color: var(--amber); }
+  .act-enable  { color: var(--green); border-color: var(--green); }
+  .act-enable:hover  { background: var(--green-soft); color: var(--green); }
+  .act-delete  { color: var(--red);   border-color: #fecaca; }
+  .act-delete:hover  { background: var(--red-soft); color: var(--red); }
+
+  .empty-state {
+    padding: 3.5rem 1rem; text-align: center; color: var(--ink-3);
+  }
+  .empty-icon {
+    width: 48px; height: 48px; background: var(--surface-3);
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; margin: 0 auto .75rem; font-size: 1.2rem;
+  }
+  .empty-title { font-size: .85rem; font-weight: 600; color: var(--ink-2); margin-bottom: .25rem; }
+  .empty-sub   { font-size: .75rem; }
+
+  /* ══════════════════════════════
+     MOBILE — card list below 768px
+  ══════════════════════════════ */
+  .sl-mobile-list { display: none; }
+
+  @media (max-width: 767px) {
+    .sl-table-wrap  { display: none; }
+    .sl-mobile-list { display: block; }
+
+    .sl-mobile-card {
+      padding: 1rem 1.1rem;
+      border-bottom: 1px solid var(--surface-3);
+    }
+    .sl-mobile-card:last-child { border-bottom: none; }
+
+    .sl-mobile-top {
+      display: flex; align-items: center;
+      justify-content: space-between; gap: .75rem; margin-bottom: .5rem;
+    }
+    .sl-mobile-meta {
+      font-size: .72rem; color: var(--ink-3);
+      display: flex; flex-wrap: wrap; gap: .3rem .85rem; margin-bottom: .6rem;
+    }
+    .sl-mobile-meta span { display: flex; align-items: center; gap: .3rem; }
+    .sl-mobile-actions { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
+  }
+</style>
+
+<div class="sl-root">
+
+  <div class="sl-header">
+    <div>
+      <div class="sl-title">Staff Members</div>
+      <div class="sl-subtitle">
+        {{ staff_list.count }} member{{ staff_list.count|pluralize }} total
+      </div>
+    </div>
+    <a href="{% url 'add_staff' %}" class="sl-add-btn">
+      <i class="fa-solid fa-plus" style="font-size:.65rem"></i> Add Staff
+    </a>
+  </div>
+
+  <div class="sl-card">
+
+    <!-- ── DESKTOP TABLE ── -->
+    <div class="sl-table-wrap">
+      <table class="sl-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Member</th>
+            <th>Email</th>
+            <th>Mobile</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in staff_list %}
+          <tr>
+            <td class="mono" style="color:var(--ink-3)">{{ forloop.counter }}</td>
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">{{ s.first_name|slice:":1"|upper }}</div>
+                <div>
+                  <div class="user-name">{{ s.get_full_name|default:"—" }}</div>
+                  <div class="user-handle">@{{ s.username }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="mono">{{ s.email }}</td>
+            <td class="mono">{{ s.mobile_number|default:"—" }}</td>
+            <td>
+              {% if s.is_active %}
+                <span class="status-pill pill-active">
+                  <span class="status-dot"></span> Active
+                </span>
+              {% else %}
+                <span class="status-pill pill-disabled">
+                  <span class="status-dot"></span> Disabled
+                </span>
+              {% endif %}
+            </td>
+            <td class="mono">{{ s.date_joined|date:"d M Y" }}</td>
+            <td>
+              <div class="action-group">
+                <a href="{% url 'edit_staff' s.pk %}" class="act-btn act-edit">
+                  <i class="fa-solid fa-pen" style="font-size:.6rem"></i> Edit
+                </a>
+                <form method="post" action="{% url 'toggle_staff' s.pk %}" class="d-inline">
+                  {% csrf_token %}
+                  {% if s.is_active %}
+                    <button type="submit" class="act-btn act-disable"
+                      onclick="return confirm('Disable {{ s.get_full_name|default:s.username }}?')">
+                      <i class="fa-solid fa-ban" style="font-size:.6rem"></i> Disable
+                    </button>
+                  {% else %}
+                    <button type="submit" class="act-btn act-enable"
+                      onclick="return confirm('Enable {{ s.get_full_name|default:s.username }}?')">
+                      <i class="fa-solid fa-circle-check" style="font-size:.6rem"></i> Enable
+                    </button>
+                  {% endif %}
+                </form>
+                <a href="{% url 'delete_staff' s.pk %}" class="act-btn act-delete">
+                  <i class="fa-solid fa-trash" style="font-size:.6rem"></i> Delete
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <div class="empty-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="empty-title">No staff members yet</div>
+                <div class="empty-sub">
+                  <a href="{% url 'add_staff' %}" style="color:var(--blue)">
+                    Add your first staff member →
+                  </a>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── MOBILE CARD LIST ── -->
+    <div class="sl-mobile-list">
+      {% for s in staff_list %}
+      <div class="sl-mobile-card">
+        <div class="sl-mobile-top">
+          <div class="user-cell">
+            <div class="user-avatar">{{ s.first_name|slice:":1"|upper }}</div>
+            <div>
+              <div class="user-name">{{ s.get_full_name|default:"—" }}</div>
+              <div class="user-handle">@{{ s.username }}</div>
+            </div>
+          </div>
+          {% if s.is_active %}
+            <span class="status-pill pill-active"><span class="status-dot"></span> Active</span>
+          {% else %}
+            <span class="status-pill pill-disabled"><span class="status-dot"></span> Disabled</span>
+          {% endif %}
+        </div>
+        <div class="sl-mobile-meta">
+          <span><i class="fa-solid fa-envelope" style="font-size:.6rem"></i> {{ s.email }}</span>
+          <span><i class="fa-solid fa-phone" style="font-size:.6rem"></i> {{ s.mobile_number|default:"—" }}</span>
+          <span><i class="fa-solid fa-calendar" style="font-size:.6rem"></i> {{ s.date_joined|date:"d M Y" }}</span>
+        </div>
+        <div class="sl-mobile-actions">
+          <a href="{% url 'edit_staff' s.pk %}" class="act-btn act-edit">
+            <i class="fa-solid fa-pen" style="font-size:.6rem"></i> Edit
+          </a>
+          <form method="post" action="{% url 'toggle_staff' s.pk %}" class="d-inline">
+            {% csrf_token %}
+            {% if s.is_active %}
+              <button type="submit" class="act-btn act-disable"
+                onclick="return confirm('Disable {{ s.get_full_name|default:s.username }}?')">
+                <i class="fa-solid fa-ban" style="font-size:.6rem"></i> Disable
+              </button>
+            {% else %}
+              <button type="submit" class="act-btn act-enable"
+                onclick="return confirm('Enable {{ s.get_full_name|default:s.username }}?')">
+                <i class="fa-solid fa-circle-check" style="font-size:.6rem"></i> Enable
+              </button>
+            {% endif %}
+          </form>
+          <a href="{% url 'delete_staff' s.pk %}" class="act-btn act-delete">
+            <i class="fa-solid fa-trash" style="font-size:.6rem"></i> Delete
+          </a>
+        </div>
+      </div>
+      {% empty %}
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fa-solid fa-users"></i></div>
+        <div class="empty-title">No staff members yet</div>
+        <div class="empty-sub">
+          <a href="{% url 'add_staff' %}" style="color:var(--blue)">
+            Add your first staff member →
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
