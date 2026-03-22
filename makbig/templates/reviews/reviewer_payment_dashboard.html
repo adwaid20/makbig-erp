@@ -1,128 +1,311 @@
 {% extends "layouts/staff_layout.html" %}
+{% block title %}Reviewer Payments{% endblock %}
+{% block page_title %}Reviewer Payment Dashboard{% endblock %}
+
 {% block content %}
-
 <style>
-    .reviewer-card {
-        border-radius: 12px;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        overflow: hidden;
-    }
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
-    .reviewer-header {
-        background: #f8fafc;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #e5e7eb;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+  .rp-root {
+    font-family: 'DM Sans', sans-serif;
+    --ink: #0d1117;
+    --ink-2: #374151;
+    --ink-3: #6b7280;
+    --surface: #ffffff;
+    --surface-2: #f9fafb;
+    --surface-3: #f3f4f6;
+    --border: #e5e7eb;
+    --blue: #2563eb;
+    --blue-soft: #eff6ff;
+    --blue-mid: #bfdbfe;
+    --green: #16a34a;
+    --green-soft: #f0fdf4;
+    --green-mid: #bbf7d0;
+    --red: #dc2626;
+    --red-soft: #fef2f2;
+    --red-mid: #fecaca;
+    --radius: 12px;
+    --shadow-md: 0 4px 12px rgba(0,0,0,.07);
+  }
 
-    .badge-paid {
-        background: #dcfce7;
-        color: #166534;
-        font-weight: 600;
-        border-radius: 999px;
-        padding: 0.25rem 0.75rem;
-        font-size: 0.75rem;
-    }
+  .rv-block { margin-bottom: 2rem; }
 
-    .badge-unpaid {
-        background: #fee2e2;
-        color: #991b1b;
-        font-weight: 600;
-        border-radius: 999px;
-        padding: 0.25rem 0.75rem;
-        font-size: 0.75rem;
-    }
+  /* ── Reviewer header ── */
+  .rv-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: .65rem; padding: 0 .25rem;
+  }
+  .rv-identity { display: flex; align-items: center; gap: .65rem; }
+  .rv-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--blue-soft); color: var(--blue);
+    font-size: .85rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--blue-mid); flex-shrink: 0;
+  }
+  .rv-name { font-size: 1rem; font-weight: 700; color: var(--ink); }
+  .rv-count {
+    font-size: .72rem; color: var(--ink-3);
+    background: var(--surface-3); border: 1px solid var(--border);
+    padding: .2rem .65rem; border-radius: 99px;
+  }
 
-    .student-chip {
-        display: inline-block;
-        background: #f1f5f9;
-        color: #334155;
-        padding: 0.25rem 0.6rem;
-        border-radius: 999px;
-        font-size: 0.7rem;
-        margin: 2px 4px 2px 0;
-        white-space: nowrap;
-    }
+  /* ── Table card ── */
+  .rv-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  .rv-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .rv-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+
+  .rv-table thead th {
+    font-size: .63rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--ink-3);
+    padding: .65rem 1rem; background: var(--surface-2);
+    border-bottom: 2px solid var(--border); white-space: nowrap;
+  }
+  .rv-table thead th:first-child { padding-left: 1.25rem; }
+
+  /* ── Group separator row ── */
+  .sep-row td {
+    padding: .45rem 1.25rem;
+    font-size: .65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; border-bottom: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+  }
+  .sep-row.sep-unpaid td { background: #fff1f2; color: var(--red); }
+  .sep-row.sep-paid   td { background: #f0fdf4; color: var(--green); }
+
+  /* ── Data rows — indented ── */
+  .rv-table tbody tr.data-row td {
+    padding: .85rem 1rem;
+    font-size: .8rem; color: var(--ink-2);
+    border-bottom: 1px solid var(--surface-3);
+    vertical-align: middle;
+  }
+  /* First cell indented to visually sit under the section label */
+  .rv-table tbody tr.data-row td:first-child { padding-left: 2.75rem; }
+  .rv-table tbody tr.data-row:last-child td  { border-bottom: none; }
+
+  /* Left stripe per payment status */
+  .rv-table tbody tr.data-row.unpaid-row td:first-child {
+    box-shadow: inset 3px 0 0 var(--red);
+  }
+  .rv-table tbody tr.data-row.paid-row td:first-child {
+    box-shadow: inset 3px 0 0 var(--green);
+  }
+  .rv-table tbody tr.data-row.unpaid-row:hover td { background: #fff8f8; }
+  .rv-table tbody tr.data-row.paid-row:hover   td { background: var(--surface-2); }
+
+  .mono { font-family: 'DM Mono', monospace; font-size: .75rem; }
+
+  .review-name   { font-weight: 600; color: var(--ink); font-size: .82rem; }
+  .review-course { font-size: .7rem; color: var(--ink-3); margin-top: .1rem; }
+
+  .student-chip {
+    display: inline-flex; align-items: center;
+    background: var(--surface-3); color: var(--ink-2);
+    padding: .18rem .55rem; border-radius: 99px;
+    font-size: .68rem; font-weight: 500;
+    margin: 2px 3px 2px 0; white-space: nowrap;
+    border: 1px solid var(--border);
+  }
+
+  .badge-paid {
+    display: inline-flex; align-items: center; gap: .3rem;
+    background: var(--green-soft); color: var(--green);
+    border: 1px solid var(--green-mid); font-weight: 600;
+    border-radius: 99px; padding: .2rem .65rem; font-size: .7rem;
+  }
+  .badge-unpaid {
+    display: inline-flex; align-items: center; gap: .3rem;
+    background: var(--red-soft); color: var(--red);
+    border: 1px solid var(--red-mid); font-weight: 600;
+    border-radius: 99px; padding: .2rem .65rem; font-size: .7rem;
+  }
+
+  .btn-mark-paid {
+    font-size: .72rem; font-weight: 600; padding: .3rem .8rem;
+    border-radius: 6px; cursor: pointer; transition: all .15s;
+    display: inline-flex; align-items: center; gap: .3rem;
+    font-family: 'DM Sans', sans-serif; white-space: nowrap;
+    background: var(--green-soft); color: var(--green);
+    border: 1.5px solid var(--green-mid);
+  }
+  .btn-mark-paid:hover { background: var(--green); color: #fff; border-color: var(--green); }
+
+  .btn-mark-unpaid {
+    font-size: .72rem; font-weight: 600; padding: .3rem .8rem;
+    border-radius: 6px; cursor: pointer; transition: all .15s;
+    display: inline-flex; align-items: center; gap: .3rem;
+    font-family: 'DM Sans', sans-serif; white-space: nowrap;
+    background: var(--surface-2); color: var(--ink-3);
+    border: 1.5px solid var(--border);
+  }
+  .btn-mark-unpaid:hover { background: var(--red-soft); color: var(--red); border-color: var(--red-mid); }
+
+  .empty-row td {
+    padding: .75rem 2.75rem;
+    font-size: .75rem; font-style: italic; color: var(--ink-3);
+    border-bottom: 1px solid var(--surface-3);
+  }
 </style>
 
-<h4 class="mb-4">Reviewer Payment Dashboard</h4>
+<div class="rp-root">
 
-{% regroup sessions by reviewer_name as reviewer_groups %}
+  {% regroup sessions by reviewer_name as reviewer_groups %}
 
-{% for reviewer in reviewer_groups %}
-<div class="card reviewer-card mb-4">
+  {% if not reviewer_groups %}
+    <div style="text-align:center;padding:4rem 1rem;color:var(--ink-3)">
+      <div style="font-size:1.5rem;margin-bottom:.5rem">📋</div>
+      <div style="font-weight:600;color:var(--ink-2);margin-bottom:.2rem">No review sessions yet</div>
+      <div style="font-size:.8rem">Completed reviews will appear here</div>
+    </div>
+  {% endif %}
 
-    <!-- Reviewer Header -->
-    <div class="reviewer-header">
-        <strong>{{ reviewer.grouper }}</strong>
-        <span class="badge bg-secondary">
-            {{ reviewer.list|length }} Reviews
-        </span>
+  {% for reviewer in reviewer_groups %}
+  <div class="rv-block">
+
+    <div class="rv-header">
+      <div class="rv-identity">
+        <div class="rv-avatar">{{ reviewer.grouper|slice:":1"|upper }}</div>
+        <div class="rv-name">{{ reviewer.grouper }}</div>
+      </div>
+      <span class="rv-count">{{ reviewer.list|length }} session{{ reviewer.list|length|pluralize }}</span>
     </div>
 
-    <div class="card-body p-0 table-responsive">
-        <table class="table table-sm align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th style="width: 22%">Review Name</th>
-                    <th style="width: 15%">Date</th>
-                    <th style="width: 18%">Course</th>
-                    <th style="width: 25%">Students</th>
-                    <th style="width: 10%">Payment</th>
-                    <th style="width: 10%">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for session in reviewer.list %}
-                <tr>
-                    <td>{{ session.review_name }}</td>
+    <div class="rv-card">
+      <div class="rv-table-wrap">
+        <table class="rv-table">
+          <thead>
+            <tr>
+              <th>Review</th>
+              <th>Date</th>
+              <th>Students</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
 
-                    <td>
-                        {{ session.scheduled_date|date:"M d, Y" }}
-                    </td>
+            <!-- ══ UNPAID GROUP ══ -->
+            <tr class="sep-row sep-unpaid">
+              <td colspan="5">
+                <i class="fa-solid fa-clock" style="margin-right:.35rem"></i>
+                Pending Payment
+              </td>
+            </tr>
+            {% for session in reviewer.list %}
+              {% if not session.is_paid %}
+              <tr class="data-row unpaid-row">
+                <td>
+                  <div class="review-name">{{ session.review_name }}</div>
+                  <div class="review-course">{{ session.course.name }}</div>
+                </td>
+                <td class="mono">{{ session.scheduled_date|date:"d M Y" }}</td>
+                <td>
+                  {% for a in session.student_reviews.all %}
+                    {% if a.status == 'pass' or a.status == 'fail' %}
+                      <span class="student-chip">
+                        {{ a.student.user.first_name }} {{ a.student.user.last_name }}
+                      </span>
+                    {% endif %}
+                  {% endfor %}
+                </td>
+                <td>
+                  <span class="badge-unpaid">
+                    <i class="fa-solid fa-clock" style="font-size:.6rem"></i> Unpaid
+                  </span>
+                </td>
+                <td>
+                  <form method="post" action="{% url 'toggle_reviewer_payment' session.id %}">
+                    {% csrf_token %}
+                    <button class="btn-mark-paid">
+                      <i class="fa-solid fa-check" style="font-size:.6rem"></i> Mark Paid
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endif %}
+            {% endfor %}
 
-                    <td>
-                        {{ session.course.name }}
-                    </td>
+            <!-- ══ PAID GROUP ══ -->
+            <tr class="sep-row sep-paid">
+              <td colspan="5">
+                <i class="fa-solid fa-circle-check" style="margin-right:.35rem"></i>
+                Paid
+              </td>
+            </tr>
+            {% for session in reviewer.list %}
+              {% if session.is_paid %}
+              <tr class="data-row paid-row">
+                <td>
+                  <div class="review-name">{{ session.review_name }}</div>
+                  <div class="review-course">{{ session.course.name }}</div>
+                </td>
+                <td class="mono">{{ session.scheduled_date|date:"d M Y" }}</td>
+                <td>
+                  {% for a in session.student_reviews.all %}
+                    {% if a.status == 'pass' or a.status == 'fail' %}
+                      <span class="student-chip">
+                        {{ a.student.user.first_name }} {{ a.student.user.last_name }}
+                      </span>
+                    {% endif %}
+                  {% endfor %}
+                </td>
+                <td>
+                  <span class="badge-paid">
+                    <i class="fa-solid fa-circle-check" style="font-size:.6rem"></i> Paid
+                  </span>
+                </td>
+                <td>
+                  <form method="post" action="{% url 'toggle_reviewer_payment' session.id %}">
+                    {% csrf_token %}
+                    <button class="btn-mark-unpaid">
+                      <i class="fa-solid fa-rotate-left" style="font-size:.6rem"></i> Mark Unpaid
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endif %}
+            {% endfor %}
 
-                    <td>
-                        {% for attendance in session.student_reviews.all %}
-                            {% if attendance.status == 'pass' or attendance.status == 'fail' %}
-                                <span class="student-chip">
-                                    {{ attendance.student.user.first_name }}
-                                    {{ attendance.student.user.last_name }}
-                                </span>
-                            {% endif %}
-                        {% endfor %}
-                    </td>
-
-                    <td>
-                        {% if session.is_paid %}
-                            <span class="badge-paid">Paid</span>
-                        {% else %}
-                            <span class="badge-unpaid">Unpaid</span>
-                        {% endif %}
-                    </td>
-
-                    <td>
-                        <form method="post"
-                              action="{% url 'toggle_reviewer_payment' session.id %}">
-                            {% csrf_token %}
-                            <button class="btn btn-sm btn-outline-primary">
-                                Toggle
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
+          </tbody>
         </table>
+      </div>
     </div>
+
+  </div>
+  {% endfor %}
 
 </div>
-{% endfor %}
+
+<script>
+document.querySelectorAll('.rv-table tbody').forEach(function(tbody) {
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  rows.forEach(function(row, i) {
+    if (!row.classList.contains('sep-row')) return;
+    const isUnpaid = row.classList.contains('sep-unpaid');
+    let hasData = false;
+    for (let j = i + 1; j < rows.length; j++) {
+      if (rows[j].classList.contains('sep-row')) break;
+      if (rows[j].classList.contains('data-row')) { hasData = true; break; }
+    }
+    if (!hasData) {
+      const emptyTr = document.createElement('tr');
+      emptyTr.className = 'empty-row';
+      emptyTr.innerHTML = '<td colspan="5">' +
+        (isUnpaid
+          ? '<i class="fa-solid fa-circle-check" style="color:#16a34a;margin-right:.35rem"></i>All sessions paid'
+          : 'No paid sessions yet') +
+        '</td>';
+      row.after(emptyTr);
+    }
+  });
+});
+</script>
 
 {% endblock %}

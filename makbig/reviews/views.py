@@ -48,7 +48,7 @@ def staff_student_review(request, student_id):
     selected_course = request.GET.get('course')
 
     student = get_object_or_404(StudentProfile, id=student_id)
-
+    existing_fine = None
     total_fine = Penalty.objects.filter(student=student).aggregate(total=Sum('amount'))['total'] or 0
 
     # if selected_course and str(student.course.id) != selected_course:
@@ -72,8 +72,12 @@ def staff_student_review(request, student_id):
         ).order_by('-created_at')
 
 
-    existing_fine = Penalty.objects.filter(student=student,penalty_type='review').first()
-
+        if upcoming_review:
+            existing_fine = Penalty.objects.filter(
+            student=student,
+            penalty_type='review',
+            review_attendance=upcoming_review   # ← only this review's fine
+            ).first()
 
     past_reviews = ReviewAttendance.objects.filter(student=student,status__in=['pass','fail']).select_related('session').order_by('-session__scheduled_date')
 
@@ -169,13 +173,14 @@ def staff_edit_completed_review(request, attendance_id):
 
         penalty_form = PenaltyForm(request.POST, instance=penalty)
 
-        if session_form.is_valid() and attendance_form.is_valid():
+        if session_form.is_valid() and attendance_form.is_valid() and penalty_form.is_valid():
             session_form.save()
             attendance_form.save()
 
             penalty_obj = penalty_form.save(commit=False)
 
-            if penalty_form.cleaned_data.get('amount'):
+            amount = penalty_form.cleaned_data.get('amount')
+            if amount is not None:
                 penalty_obj.student = review.student
                 penalty_obj.review_attendance = review
                 penalty_obj.penalty_type = 'review'
@@ -233,7 +238,7 @@ def toggle_reviewer_payment(request, session_id):
 #student side
 from reviewtickets.models import ReviewTicket
 
-@login_required
+@login_required(login_url='student_login')
 def student_review(request):
     if not request.user.is_student:
         messages.error(request, "Access denied.")

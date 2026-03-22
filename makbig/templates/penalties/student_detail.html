@@ -1,76 +1,503 @@
 {% extends "layouts/staff_layout.html" %}
 {% block content %}
 
-<h2>{{ student.user.get_full_name }} - Penalties</h2>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
-<a href="{% url 'fines' %}" class="btn btn-secondary btn-sm mb-3">
-    <i class="fa-solid fa-arrow-left"></i> Back
-</a>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface-2: #faf9f6;
+    --border: #e8e4dc;
+    --border-strong: #d4cfc4;
+    --text-primary: #1a1916;
+    --text-secondary: #6b6760;
+    --text-muted: #9e9b95;
+    --accent: #c84b2f;
+    --accent-light: #fdf0ed;
+    --accent-mid: #f0d5cf;
+    --green: #2d7a4f;
+    --green-light: #edf7f2;
+    --green-mid: #b8dfc9;
+    --amber: #b45309;
+    --amber-light: #fef3e2;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
 
-<p><strong>Total Unpaid:</strong> ₹ {{ total_unpaid }}</p>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-<hr>
+  .penalty-wrap {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 2rem 1.5rem 4rem;
+    max-width: 1050px;
+    margin: 0 auto;
+  }
 
-<h3>Unpaid Penalties</h3>
+  /* ── Top nav ── */
+  .top-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+  }
 
-<table border="1" cellpadding="8">
-<tr>
-    <th>Type</th>
-    <th>Details</th>
-    <th>Amount</th>
-    <th>Edit</th>
-    <th>Mark Paid</th>
-</tr>
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 0.48rem 1rem;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .btn-back:hover {
+    background: var(--text-primary);
+    color: #fff;
+    border-color: var(--text-primary);
+  }
 
-{% for p in unpaid_penalties %}
-<tr>
-    <td>{{ p.get_penalty_type_display }}</td>
-    <td>
-        {% if p.attendance_record %}
-            Attendance Date: {{ p.attendance_record.date }} <br>
-            Remarks: {{ p.reason }}
-        {% elif p.review_attendance %}
-            Review: Review: {{ p.review_attendance.session.review_name }} <br>
-            Status: {{ p.review_attendance.status }} <br>
-        {% else %}
-            {{ p.reason }}
-        {% endif %}
-    </td>
-    <td>₹ {{ p.amount }}</td>
-    <td>
-        <a href="{% url 'edit_penalty' p.id %}">Edit</a>
-    </td>
-    <td>
-        <a href="{% url 'mark_paid' p.id %}">
-            Mark Paid
-        </a>
-    </td>
-</tr>
-{% empty %}
-<tr><td colspan="5">No unpaid penalties</td></tr>
-{% endfor %}
-</table>
+  /* ── Student hero card ── */
+  .student-hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 1.75rem;
+  }
 
-<hr>
+  .hero-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
 
-<h3>Paid History</h3>
+  .hero-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    border: 2px solid var(--accent-mid);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; font-weight: 700; color: var(--accent);
+    font-family: 'DM Mono', monospace; flex-shrink: 0;
+  }
 
-<table border="1" cellpadding="8">
-<tr>
-    <th>Type</th>
-    <th>Amount</th>
-    <th>Date</th>
-</tr>
+  .hero-name {
+    font-size: 1.35rem; font-weight: 700;
+    color: var(--text-primary); letter-spacing: -0.01em;
+  }
 
-{% for p in paid_penalties %}
-<tr>
-    <td>{{ p.get_penalty_type_display }}</td>
-    <td>₹ {{ p.amount }}</td>
-    <td>{{ p.created_at }}</td>
-</tr>
-{% empty %}
-<tr><td colspan="3">No paid penalties</td></tr>
-{% endfor %}
-</table>
+  .hero-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.15rem; }
 
+  .hero-stat { text-align: right; }
+  .hero-stat-label {
+    font-size: 0.75rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-muted); margin-bottom: 0.2rem;
+  }
+  .hero-stat-amount {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.65rem; font-weight: 500;
+    color: var(--accent); letter-spacing: -0.02em;
+  }
+
+  /* ── Section headers ── */
+  .section-header {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1rem; margin-top: 0.25rem;
+  }
+  .section-title {
+    font-size: 1.05rem; font-weight: 700;
+    color: var(--text-primary); letter-spacing: -0.01em;
+  }
+  .section-pill {
+    font-size: 0.75rem; font-weight: 600;
+    padding: 0.18rem 0.6rem; border-radius: 99px; letter-spacing: 0.04em;
+  }
+  .pill-unpaid { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent-mid); }
+  .pill-paid   { background: var(--green-light);  color: var(--green);  border: 1px solid var(--green-mid); }
+
+  /* ── Table Card ── */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  /* ── Scrollable wrapper for tables ── */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  .data-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; min-width: 560px; }
+
+  .data-table thead { background: var(--surface-2); }
+  .data-table th {
+    padding: 0.85rem 1.3rem;
+    text-align: left; font-size: 0.76rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.09em;
+    color: var(--text-muted); border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  .data-table td {
+    padding: 1rem 1.3rem;
+    color: var(--text-primary); border-bottom: 1px solid var(--border);
+    vertical-align: middle; font-size: 0.95rem; line-height: 1.5;
+  }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr { transition: background 0.12s; }
+  .data-table tbody tr:hover { background: var(--surface-2); }
+
+  /* Type chip */
+  .type-chip {
+    display: inline-block; font-size: 0.8rem; font-weight: 600;
+    padding: 0.22rem 0.7rem; border-radius: 6px;
+    background: var(--amber-light); color: var(--amber);
+    border: 1px solid #f5d99a; white-space: nowrap;
+  }
+
+  /* Detail cell */
+  .detail-main { font-weight: 500; color: var(--text-primary); font-size: 0.93rem; }
+  .detail-sub  { font-size: 0.83rem; color: var(--text-muted); margin-top: 0.2rem; }
+  .detail-tag {
+    display: inline-block; font-size: 0.78rem; font-weight: 500;
+    padding: 0.15rem 0.5rem; border-radius: 4px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-secondary); margin-top: 0.25rem;
+  }
+
+  /* Amount */
+  .amount-text {
+    font-family: 'DM Mono', monospace; font-size: 0.95rem;
+    font-weight: 500; color: var(--accent); white-space: nowrap;
+  }
+  .amount-paid { color: var(--green); }
+
+  /* Buttons */
+  .btn-action {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'DM Sans', sans-serif; font-size: 0.84rem; font-weight: 600;
+    padding: 0.42rem 0.85rem; border-radius: var(--radius-sm);
+    text-decoration: none; transition: all 0.15s;
+    white-space: nowrap; border: 1.5px solid transparent; cursor: pointer;
+  }
+  .btn-edit { background: var(--surface); color: var(--text-primary); border-color: var(--border-strong); }
+  .btn-edit:hover { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
+  .btn-mark-paid { background: var(--green-light); color: var(--green); border-color: var(--green-mid); }
+  .btn-mark-paid:hover { background: var(--green); color: #fff; border-color: var(--green); }
+  .btn-mark-unpaid {
+    background: var(--surface); color: var(--text-secondary);
+    border-color: var(--border-strong); font-size: 0.8rem; padding: 0.35rem 0.75rem;
+  }
+  .btn-mark-unpaid:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent-mid); }
+
+  /* Locked badge */
+  .locked-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.75rem; font-weight: 600; color: var(--green);
+    background: var(--green-light); border: 1px solid var(--green-mid);
+    padding: 0.22rem 0.65rem; border-radius: 99px; white-space: nowrap;
+  }
+
+  .date-text { font-family: 'DM Mono', monospace; font-size: 0.88rem; color: var(--text-secondary); }
+
+  /* Empty row */
+  .empty-row td {
+    text-align: center; padding: 2.5rem 1rem;
+    color: var(--text-muted); font-size: 0.95rem;
+  }
+
+  /* ══════════════════════════════
+     MOBILE — card layout below 640px
+  ══════════════════════════════ */
+  .mobile-cards { display: none; }
+
+  @media (max-width: 640px) {
+    .penalty-wrap { padding: 1.25rem 1rem 3rem; }
+    .hero-stat { text-align: left; }
+    .student-hero { flex-direction: column; }
+
+    /* Hide table, show cards */
+    .table-scroll { display: none; }
+    .mobile-cards { display: block; }
+
+    .m-card {
+      padding: 1rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .m-card:last-child { border-bottom: none; }
+
+    .m-card-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: .75rem; margin-bottom: .5rem;
+    }
+    .m-card-amount {
+      font-family: 'DM Mono', monospace; font-size: 1rem; font-weight: 600;
+      color: var(--accent); white-space: nowrap;
+    }
+    .m-card-amount.paid { color: var(--green); }
+    .m-card-meta {
+      font-size: .78rem; color: var(--text-muted);
+      display: flex; flex-wrap: wrap; gap: .25rem .75rem; margin-bottom: .65rem;
+    }
+    .m-card-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .m-card-actions .btn-action,
+    .m-card-actions .btn-mark-unpaid { font-size: .78rem; padding: .35rem .75rem; }
+
+    .m-empty {
+      padding: 2rem 1.1rem; text-align: center;
+      color: var(--text-muted); font-size: .85rem;
+    }
+  }
+</style>
+
+<div class="penalty-wrap">
+
+  <!-- Back nav -->
+  <div class="top-nav">
+    <a href="{% url 'fines' %}" class="btn-back">
+      <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+    </a>
+  </div>
+
+  <!-- Student hero -->
+  <div class="student-hero">
+    <div class="hero-left">
+      <div class="hero-avatar">{{ student.user.get_full_name|slice:":1"|upper }}</div>
+      <div>
+        <div class="hero-name">{{ student.user.get_full_name }}</div>
+        <div class="hero-sub">{{ student.user.email }}</div>
+      </div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-label">Total Unpaid</div>
+      <div class="hero-stat-amount">₹ {{ total_unpaid }}</div>
+    </div>
+  </div>
+
+  <!-- ══ UNPAID PENALTIES ══ -->
+  <div class="section-header">
+    <span class="section-title">Unpaid Penalties</span>
+    <span class="section-pill pill-unpaid">Action Required</span>
+  </div>
+
+  <div class="table-card">
+
+    <!-- Desktop table -->
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Details</th>
+            <th>Amount</th>
+            <th>Edit</th>
+            <th>Mark Paid</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in unpaid_penalties %}
+          <tr>
+            <td><span class="type-chip">{{ p.get_penalty_type_display }}</span></td>
+            <td>
+              {% if p.attendance_record %}
+                <div class="detail-main">Attendance Penalty</div>
+                <div class="detail-sub">
+                  <span class="detail-tag"><i class="fa-regular fa-calendar" style="margin-right:.3rem"></i>{{ p.attendance_record.date }}</span>
+                </div>
+                {% if p.reason %}<div class="detail-sub" style="margin-top:.35rem">{{ p.reason }}</div>{% endif %}
+              {% elif p.review_attendance %}
+                <div class="detail-main">{{ p.review_attendance.session.review_name }}</div>
+                <div class="detail-sub"><span class="detail-tag">{{ p.review_attendance.status }}</span></div>
+              {% else %}
+                <div class="detail-main">{{ p.reason }}</div>
+              {% endif %}
+            </td>
+            <td><span class="amount-text">₹ {{ p.amount }}</span></td>
+            <td>
+              <a href="{% url 'edit_penalty' p.id %}" class="btn-action btn-edit">
+                <i class="fa-solid fa-pen"></i> Edit
+              </a>
+            </td>
+            <td>
+              <a href="{% url 'mark_paid' p.id %}" class="btn-action btn-mark-paid">
+                <i class="fa-solid fa-check"></i> Mark Paid
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr class="empty-row">
+            <td colspan="5">
+              <i class="fa-regular fa-circle-check" style="font-size:1.5rem;display:block;margin-bottom:.5rem;color:var(--green)"></i>
+              No unpaid penalties — all clear!
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile cards -->
+    <div class="mobile-cards">
+      {% for p in unpaid_penalties %}
+      <div class="m-card">
+        <div class="m-card-top">
+          <div>
+            <span class="type-chip">{{ p.get_penalty_type_display }}</span>
+            <div class="detail-main" style="margin-top:.4rem">
+              {% if p.attendance_record %}Attendance — {{ p.attendance_record.date }}
+              {% elif p.review_attendance %}{{ p.review_attendance.session.review_name }}
+              {% else %}{{ p.reason }}{% endif %}
+            </div>
+          </div>
+          <div class="m-card-amount">₹ {{ p.amount }}</div>
+        </div>
+        <div class="m-card-actions">
+          <a href="{% url 'edit_penalty' p.id %}" class="btn-action btn-edit">
+            <i class="fa-solid fa-pen"></i> Edit
+          </a>
+          <a href="{% url 'mark_paid' p.id %}" class="btn-action btn-mark-paid">
+            <i class="fa-solid fa-check"></i> Mark Paid
+          </a>
+        </div>
+      </div>
+      {% empty %}
+      <div class="m-empty">
+        <i class="fa-regular fa-circle-check" style="font-size:1.4rem;display:block;margin-bottom:.4rem;color:var(--green)"></i>
+        No unpaid penalties — all clear!
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+  <!-- ══ PAID HISTORY ══ -->
+  <div class="section-header">
+    <span class="section-title">Payment History</span>
+    <span class="section-pill pill-paid">Settled</span>
+  </div>
+
+  <div class="table-card">
+
+    <!-- Desktop table -->
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Date Settled</th>
+            <th>Method</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in paid_penalties %}
+          <tr>
+            <td>
+              <span class="type-chip" style="background:var(--green-light);color:var(--green);border-color:var(--green-mid)">
+                {{ p.get_penalty_type_display }}
+              </span>
+            </td>
+            <td><span class="amount-text amount-paid">₹ {{ p.amount }}</span></td>
+            <td><span class="date-text">{{ p.created_at|date:"d M Y" }}</span></td>
+            <td>
+              {% if p.paid_via == 'online' %}
+                <span class="locked-badge"><i class="fa-solid fa-wifi" style="font-size:.65rem"></i> Online</span>
+              {% elif p.paid_via == 'manual' %}
+                <span style="font-size:.78rem;color:var(--text-muted);font-weight:500">
+                  <i class="fa-solid fa-hand" style="font-size:.65rem;margin-right:.25rem"></i>Manual
+                </span>
+              {% else %}
+                <span style="font-size:.78rem;color:var(--text-muted)">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if p.paid_via == 'manual' %}
+                <a href="{% url 'mark_unpaid' p.id %}"
+                   class="btn-action btn-mark-unpaid"
+                   onclick="return confirm('Reverse this payment and mark as unpaid?')">
+                  <i class="fa-solid fa-rotate-left" style="font-size:.7rem"></i> Mark Unpaid
+                </a>
+              {% elif p.paid_via == 'online' %}
+                <span class="locked-badge"><i class="fa-solid fa-lock" style="font-size:.6rem"></i> Locked</span>
+              {% else %}
+                <span style="font-size:.75rem;color:var(--text-muted)">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr class="empty-row">
+            <td colspan="5">
+              <i class="fa-regular fa-clock" style="font-size:1.4rem;display:block;margin-bottom:.5rem"></i>
+              No payment history yet
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile cards -->
+    <div class="mobile-cards">
+      {% for p in paid_penalties %}
+      <div class="m-card">
+        <div class="m-card-top">
+          <div>
+            <span class="type-chip" style="background:var(--green-light);color:var(--green);border-color:var(--green-mid)">
+              {{ p.get_penalty_type_display }}
+            </span>
+            <div class="m-card-meta" style="margin-top:.35rem">
+              <span><i class="fa-regular fa-calendar" style="font-size:.6rem"></i> {{ p.created_at|date:"d M Y" }}</span>
+              <span>
+                {% if p.paid_via == 'online' %}
+                  <i class="fa-solid fa-wifi" style="font-size:.6rem"></i> Online
+                {% elif p.paid_via == 'manual' %}
+                  <i class="fa-solid fa-hand" style="font-size:.6rem"></i> Manual
+                {% endif %}
+              </span>
+            </div>
+          </div>
+          <div class="m-card-amount paid">₹ {{ p.amount }}</div>
+        </div>
+        <div class="m-card-actions">
+          {% if p.paid_via == 'manual' %}
+            <a href="{% url 'mark_unpaid' p.id %}"
+               class="btn-action btn-mark-unpaid"
+               onclick="return confirm('Reverse this payment and mark as unpaid?')">
+              <i class="fa-solid fa-rotate-left" style="font-size:.65rem"></i> Mark Unpaid
+            </a>
+          {% elif p.paid_via == 'online' %}
+            <span class="locked-badge"><i class="fa-solid fa-lock" style="font-size:.6rem"></i> Locked</span>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="m-empty">
+        <i class="fa-regular fa-clock" style="font-size:1.4rem;display:block;margin-bottom:.4rem"></i>
+        No payment history yet
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+</div>
 {% endblock %}

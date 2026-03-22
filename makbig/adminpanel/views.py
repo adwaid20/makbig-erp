@@ -233,7 +233,7 @@ def student_forget_password(request):
     if request.method =='POST':
         email=request.POST.get("email")
 
-        user=User.objects.filter(email__iexact=email,is_student=True,is_active=True).first() 
+        user=User.objects.filter(email__iexact=email,role='student',is_active=True).first() 
 
         if not user:
             messages.error(request,"No student found with this email")
@@ -264,7 +264,7 @@ def student_forget_password(request):
 def student_reset_password(request, uidb64, token):
     try:
         uid=force_str(urlsafe_base64_decode(uidb64))
-        user=User.objects.filter(pk=uid,is_student=True,is_active=True).first()
+        user=User.objects.filter(pk=uid,role='student',is_active=True).first()
     except (TypeError,ValueError,OverflowError,User.DoesNotExist):
         user= None
 
@@ -424,11 +424,4 @@ def course_list_create(request):
 
     courses = CourseService.get_all_courses()
 
-    return render(
-        request,
-        'adminpanel/course_list.html',
-        {
-            'form': form,
-            'courses': courses
-        }
-    )
+    return render(request,'adminpanel/course_list.html',{'form': form,'courses': courses})

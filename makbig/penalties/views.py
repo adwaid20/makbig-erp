@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.contrib import messages
 
 # Create your views here.
 # here is the penalties app
@@ -114,12 +115,32 @@ def edit_penalty(request, penalty_id):
 @login_required
 @user_passes_test(is_staff_user)
 def mark_penalty_paid(request, penalty_id):
+    penalty = get_object_or_404(Penalty, id=penalty_id)
+    penalty.is_paid = True
+    penalty.paid_via = 'manual'    # ← mark as manually paid
+    penalty.save()
+    cache.delete(DASHBOARD_CACHE_KEY)
+    return redirect('student_detail', student_id=penalty.student.id)
 
+
+@login_required
+@user_passes_test(is_staff_user)
+def mark_penalty_unpaid(request, penalty_id):
     penalty = get_object_or_404(Penalty, id=penalty_id)
 
-    penalty.is_paid = True
-    penalty.save()
-    
-    cache.delete(DASHBOARD_CACHE_KEY)
+    # Block reversal of online payments — cannot undo
+    if penalty.paid_via == 'online':
+        messages.error(request, "Online payments cannot be reversed.")
+        return redirect('student_detail', student_id=penalty.student.id)
 
+    # Only manual payments can be reversed
+    if penalty.paid_via != 'manual':
+        messages.error(request, "This penalty has not been manually marked as paid.")
+        return redirect('student_detail', student_id=penalty.student.id)
+
+    penalty.is_paid = False
+    penalty.paid_via = None        # ← clear the payment method
+    penalty.save()
+    cache.delete(DASHBOARD_CACHE_KEY)
+    messages.success(request, "Penalty marked as unpaid.")
     return redirect('student_detail', student_id=penalty.student.id)
