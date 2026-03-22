@@ -11,6 +11,9 @@ class PenaltyForm(forms.ModelForm):
     def clean_amount(self):
         amount = self.cleaned_data.get("amount")
 
+        if amount is None:
+            return None 
+
         if amount > Decimal("10000.00"):
             raise forms.ValidationError(
                 "Penalty amount cannot exceed ₹10,000."

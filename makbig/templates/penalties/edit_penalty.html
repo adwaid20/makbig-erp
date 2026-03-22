@@ -1,19 +1,343 @@
 {% extends "layouts/staff_layout.html" %}
 {% block content %}
 
-<h2>Edit Penalty</h2>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
-<p>Student: {{ penalty.student.user.email }}</p>
-<p>Type: {{ penalty.get_penalty_type_display }}</p>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface-2: #faf9f6;
+    --border: #e8e4dc;
+    --border-strong: #d4cfc4;
+    --text-primary: #1a1916;
+    --text-secondary: #6b6760;
+    --text-muted: #9e9b95;
+    --accent: #c84b2f;
+    --accent-light: #fdf0ed;
+    --accent-mid: #f0d5cf;
+    --accent-dark: #a33a22;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.09), 0 2px 4px rgba(0,0,0,0.04);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-</form>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-<a href="{% url 'student_detail' penalty.student.id %}">
-    Back
-</a>
+  .edit-wrap {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 2rem 1.5rem 4rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
 
+  /* ── Back nav ── */
+  .top-nav {
+    margin-bottom: 1.75rem;
+  }
+
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 0.48rem 1rem;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+
+  .btn-back:hover {
+    background: var(--text-primary);
+    color: #fff;
+    border-color: var(--text-primary);
+  }
+
+  /* ── Page title ── */
+  .page-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+  }
+
+  .page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin-bottom: 1.75rem;
+  }
+
+  /* ── Info card (student + type) ── */
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.4rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .info-item {}
+
+  .info-item-label {
+    font-size: 0.73rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+  }
+
+  .info-item-value {
+    font-size: 0.97rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .type-chip {
+    display: inline-block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.22rem 0.7rem;
+    border-radius: 6px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border: 1px solid var(--accent-mid);
+  }
+
+  /* ── Form card ── */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    box-shadow: var(--shadow-md);
+  }
+
+  .form-card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.4rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Django form styled via global overrides */
+  .form-card p {
+    margin-bottom: 1.2rem;
+  }
+
+  .form-card label {
+    display: block;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.45rem;
+  }
+
+  .form-card input[type="text"],
+  .form-card input[type="number"],
+  .form-card input[type="email"],
+  .form-card input[type="date"],
+  .form-card textarea,
+  .form-card select {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.97rem;
+    color: var(--text-primary);
+    background: var(--surface-2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 0.9rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+
+  .form-card input:focus,
+  .form-card textarea:focus,
+  .form-card select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(200,75,47,0.12);
+    background: var(--surface);
+  }
+
+  .form-card textarea {
+    resize: vertical;
+    min-height: 90px;
+  }
+
+  .form-card select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6760' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2.4rem;
+    cursor: pointer;
+  }
+
+  .form-card .helptext,
+  .form-card .help-text {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.35rem;
+    display: block;
+  }
+
+  /* Error styling */
+  .form-card .errorlist {
+    list-style: none;
+    margin-top: 0.35rem;
+  }
+
+  .form-card .errorlist li {
+    font-size: 0.82rem;
+    color: var(--accent);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .form-card .errorlist li::before {
+    content: "⚠";
+    font-size: 0.75rem;
+  }
+
+  /* ── Actions ── */
+  .form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.6rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.7rem 1.75rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-save:hover {
+    background: var(--accent-dark);
+  }
+
+  .btn-save:active {
+    transform: scale(0.98);
+  }
+
+  .btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    background: none;
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 1.2rem;
+    transition: all 0.15s;
+  }
+
+  .btn-cancel:hover {
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+    background: var(--surface-2);
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .edit-wrap { padding: 1.25rem 1rem 3rem; }
+    .page-title { font-size: 1.45rem; }
+    .form-card { padding: 1.25rem; }
+    .form-actions { flex-direction: column-reverse; }
+    .btn-save, .btn-cancel { width: 100%; justify-content: center; }
+  }
+</style>
+
+<div class="edit-wrap">
+
+  <!-- Back nav -->
+  <div class="top-nav">
+    <a href="{% url 'student_detail' penalty.student.id %}" class="btn-back">
+      <i class="fa-solid fa-arrow-left"></i> Back to Student
+    </a>
+  </div>
+
+  <!-- Title -->
+  <p class="page-eyebrow">Makbig · Finance</p>
+  <h1 class="page-title">Edit Penalty</h1>
+
+  <!-- Info summary -->
+  <div class="info-card">
+    <div class="info-item">
+      <div class="info-item-label">Student</div>
+      <div class="info-item-value">{{ penalty.student.user.email }}</div>
+    </div>
+    <div class="info-item">
+      <div class="info-item-label">Penalty Type</div>
+      <div class="info-item-value">
+        <span class="type-chip">{{ penalty.get_penalty_type_display }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="form-card">
+    <div class="form-card-title">
+      <i class="fa-solid fa-pen-to-square" style="margin-right:0.5rem;color:var(--accent);"></i>
+      Update Penalty Details
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <div class="form-actions">
+        <a href="{% url 'student_detail' penalty.student.id %}" class="btn-cancel">
+          <i class="fa-solid fa-xmark"></i> Cancel
+        </a>
+        <button type="submit" class="btn-save">
+          <i class="fa-solid fa-floppy-disk"></i> Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+
+</div>
 {% endblock %}

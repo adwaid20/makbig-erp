@@ -34,7 +34,7 @@ def create_student(data):
             password=temp_password,
             first_name=first_name,
             last_name=last_name,
-            is_student=True,
+            role='student',
             is_staff=False,
         )
 
@@ -84,10 +84,11 @@ class DashboardService:
         return AttendanceRecord.objects.filter(date=today,status='A').count()
 
     @staticmethod
-    def reviews_this_week():
-        week_ago = timezone.now() - timedelta(days=7)
+    def upcoming_reviews():
+        return ReviewAttendance.objects.filter(
+        status__in=['eligible', 'not_eligible']
+    ).count()
 
-        return ReviewAttendance.objects.filter(created_at__gte=week_ago).count()
 
     @staticmethod
     def pending_works():
@@ -111,7 +112,7 @@ class DashboardService:
             "total_students": cls.total_students(),
             "present_today": cls.todays_attendance(),
             "absent_today": cls.absent_today(),
-            "reviews_this_week": cls.reviews_this_week(),
+            "upcoming_reviews": cls.upcoming_reviews(),
             "pending_works": cls.pending_works(),
             "unpaid_fines": cls.unpaid_fines(),
         }

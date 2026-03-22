@@ -10,7 +10,7 @@ from attendance.models import AttendanceRecord
 class Penalty(models.Model):
 
     PENALTY_TYPE_CHOICES = [
-        ('late', 'Late Submission'),
+        ('late', 'Late'),
         ('absence', 'Absence'),
         ('misconduct', 'Misconduct'),
         ('review', 'Review Related'),
@@ -23,15 +23,29 @@ class Penalty(models.Model):
     review_attendance = models.ForeignKey('reviews.ReviewAttendance',on_delete=models.SET_NULL,null=True,blank=True)
     attendance_record = models.ForeignKey(AttendanceRecord,on_delete=models.SET_NULL,null=True,blank=True,related_name='penalties')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True)
+
+    razorpay_order_id = models.CharField(max_length=255, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=255, blank=True, null=True)
+    razorpay_signature = models.CharField(max_length=255, blank=True, null=True)
+
+
     created_at = models.DateTimeField(auto_now_add=True)
     is_paid = models.BooleanField(default=False)
+    paid_via = models.CharField(
+        max_length=20,
+        choices=[
+            ('manual', 'Manual'),
+            ('online', 'Online'),
+        ],
+        null=True, blank=True    # null means not paid yet
+    )
     amount = models.DecimalField(
         max_digits=8,
         decimal_places=2,
         validators=[
             MinValueValidator(Decimal("0.00")),
             MaxValueValidator(Decimal("10000.00"))  # ₹10,000 HARD LIMIT
-        ]
+        ],blank=True
     )
 
     def __str__(self):

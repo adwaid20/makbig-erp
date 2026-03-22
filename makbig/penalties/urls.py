@@ -8,4 +8,5 @@ urlpatterns = [
     path('student/<int:student_id>/', views.student_penalty_detail, name='student_detail'),
     path('edit/<int:penalty_id>/', views.edit_penalty, name='edit_penalty'),
     path('mark-paid/<int:penalty_id>/', views.mark_penalty_paid, name='mark_paid'),
+    path('penalties/<int:penalty_id>/mark-unpaid/', views.mark_penalty_unpaid, name='mark_unpaid'),
 ]
