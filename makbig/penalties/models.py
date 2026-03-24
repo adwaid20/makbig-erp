@@ -45,7 +45,7 @@ class Penalty(models.Model):
         validators=[
             MinValueValidator(Decimal("0.00")),
             MaxValueValidator(Decimal("10000.00"))  # ₹10,000 HARD LIMIT
-        ],blank=True
+        ]
     )
 
     def __str__(self):
