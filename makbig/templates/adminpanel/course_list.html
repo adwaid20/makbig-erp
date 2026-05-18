@@ -171,6 +171,67 @@
     color: var(--red); display: flex; align-items: flex-start; gap: .4rem;
   }
 
+  /* ── Edit button ── */
+.btn-edit {
+  width: 32px;
+  height: 32px;
+
+  border-radius: 50%;
+  border: 1.5px solid #bfdbfe;
+
+  background: var(--blue-soft);
+  color: var(--blue);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: .72rem;
+  text-decoration: none;
+
+  transition: all .18s ease;
+}
+
+.btn-edit:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+
+  color: #fff;
+
+  transform: scale(1.08);
+}
+
+/* ── Delete button ── */
+.btn-del {
+  width: 32px;
+  height: 32px;
+
+  border-radius: 50%;
+  border: 1.5px solid #fecaca;
+
+  background: var(--red-soft);
+  color: var(--red);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: .72rem;
+
+  cursor: pointer;
+
+  transition: all .18s ease;
+}
+
+.btn-del:hover {
+  background: var(--red);
+  border-color: var(--red);
+
+  color: #fff;
+
+  transform: scale(1.08);
+}
+
   /* ── Responsive ── */
   @media (max-width: 900px) {
     .co-layout {
@@ -258,66 +319,142 @@
 
       </form>
     </div>
+<!-- ══ COURSES LIST ══ -->
+<div class="co-card">
+  <div class="co-card-header" style="justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:.6rem">
+      <div class="co-header-icon icon-violet">
+        <i class="fa-solid fa-book-open"></i>
+      </div>
 
-    <!-- ══ COURSES LIST ══ -->
-    <div class="co-card">
-      <div class="co-card-header" style="justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:.6rem">
-          <div class="co-header-icon icon-violet">
-            <i class="fa-solid fa-book-open"></i>
-          </div>
-          <div>
-            <div class="co-header-title">All Courses</div>
-            <div class="co-header-sub">{{ courses|length }} course{{ courses|length|pluralize }} available</div>
-          </div>
+      <div>
+        <div class="co-header-title">All Courses</div>
+
+        <div class="co-header-sub">
+          {{ courses|length }} course{{ courses|length|pluralize }} available
         </div>
       </div>
-
-      <div class="co-table-wrap">
-        <table class="co-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Course</th>
-              <th>Duration</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for course in courses %}
-            <tr>
-              <td>
-                <span class="counter-badge">{{ forloop.counter }}</span>
-              </td>
-              <td>
-                <div class="course-name">{{ course.name }}</div>
-                {% if course.description %}
-                  <div class="course-desc">{{ course.description|truncatechars:80 }}</div>
-                {% endif %}
-              </td>
-              <td>
-                <span class="duration-pill">
-                  <i class="fa-solid fa-clock" style="font-size:.6rem"></i>
-                  {{ course.duration_months }} month{{ course.duration_months|pluralize }}
-                </span>
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="3">
-                <div class="empty-state">
-                  <div class="empty-icon"><i class="fa-solid fa-book-open"></i></div>
-                  <div class="empty-title">No courses yet</div>
-                  <div class="empty-sub">Add your first course using the form</div>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
     </div>
+  </div>
+
+  <div class="co-table-wrap">
+
+    <table class="co-table">
+
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Course</th>
+          <th>Duration</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {% for course in courses %}
+        <tr>
+
+          <!-- Counter -->
+          <td>
+            <span class="counter-badge">
+              {{ forloop.counter }}
+            </span>
+          </td>
+
+          <!-- Course Info -->
+          <td>
+            <div class="course-name">
+              {{ course.name }}
+            </div>
+
+            {% if course.description %}
+              <div class="course-desc">
+                {{ course.description|truncatechars:80 }}
+              </div>
+            {% endif %}
+          </td>
+
+          <!-- Duration -->
+          <td>
+            <span class="duration-pill">
+              <i class="fa-solid fa-clock" style="font-size:.6rem"></i>
+
+              {{ course.duration_months }}
+              month{{ course.duration_months|pluralize }}
+            </span>
+          </td>
+
+          <!-- Actions -->
+          <td style="text-align:right;">
+
+            <div style="
+                display:flex;
+                justify-content:flex-end;
+                align-items:center;
+                gap:.5rem;
+            ">
+
+              <!-- Edit -->
+              <a href="{% url 'edit_course' course.id %}"
+                 class="btn-edit"
+                 title="Edit course">
+
+                <i class="fa-solid fa-pen"></i>
+              </a>
+
+              <!-- Delete -->
+              <form method="POST"
+                    action="{% url 'delete_course' course.id %}"
+                    style="margin:0;">
+
+                {% csrf_token %}
+
+                <button type="submit"
+                        class="btn-del"
+                        onclick="return confirm('Delete this course?');">
+
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+
+              </form>
+
+            </div>
+
+          </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+          <td colspan="4">
+
+            <div class="empty-state">
+
+              <div class="empty-icon">
+                <i class="fa-solid fa-book-open"></i>
+              </div>
+
+              <div class="empty-title">
+                No courses yet
+              </div>
+
+              <div class="empty-sub">
+                Add your first course using the form
+              </div>
+
+            </div>
+
+          </td>
+        </tr>
+
+        {% endfor %}
+
+      </tbody>
+
+    </table>
 
   </div>
 </div>
-
 {% endblock %}

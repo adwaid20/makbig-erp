@@ -19,8 +19,9 @@ urlpatterns = [
     path("student/profile/", views.student_profile, name="student_profile"),
     path("students/<int:student_id>/toggle-status/",views.toggle_student_status,name="toggle_student_status"),
     path('courses/', views.course_list_create, name='course_list'),
-
-
+    path('courses/edit/<int:course_id>/',views.edit_course,name='edit_course'),
+    path('courses/delete/<int:course_id>/',views.delete_course,name='delete_course'),
+    path('students/edit/<int:student_id>/',views.edit_student,name='edit_student'),
 
     path('superadmin/', views.superadmin_dashboard, name='dashboard'),
     path('superadmin/staff/',views.superadmin_staff_list, name='staff_list'),

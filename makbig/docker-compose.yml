@@ -19,13 +19,22 @@ services:
     container_name: makbig-redis
     ports:
       - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   celery:
     build: .
     command: celery -A makbig worker -l info
+    restart: unless-stopped
     depends_on:
-      - redis
-      - db
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_started
 
 volumes:
-  postgres_data:
+  postgres_data:

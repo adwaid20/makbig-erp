@@ -132,6 +132,8 @@ CACHES = {
         "LOCATION": config("REDIS_URL"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SOCKET_CONNECT_TIMEOUT": 2,
+            "SOCKET_TIMEOUT": 2,
         },
         "KEY_PREFIX": "makbig",
     }
@@ -188,6 +190,8 @@ CELERY_RESULT_SERIALIZER = "json"
 
 CELERY_TIMEZONE = "Asia/Kolkata"   #only used if we have scheduled tasks
 CELERY_ENABLE_UTC = True
+
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 # LOGIN_URL = '/staff/login/'
 # LOGIN_REDIRECT_URL = '/staff/dashboard/'

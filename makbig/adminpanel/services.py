@@ -14,7 +14,8 @@ from django.utils import timezone
 from adminpanel.tasks import send_student_welcome_email
 from django.db.transaction import on_commit
 
-from django.core.cache import cache
+from core.cache_utils import SafeCache
+from core.tasks_utils import safe_delay
 
 DASHBOARD_CACHE_KEY = "dashboard:summary"
 DASHBOARD_CACHE_TIMEOUT = 60
@@ -44,9 +45,7 @@ def create_student(data):
             )
         
 
-        on_commit(lambda: send_student_welcome_email.delay(
-            email, first_name, temp_password
-        ))
+        on_commit(lambda: safe_delay(send_student_welcome_email, email, first_name, temp_password))
     
     invalidate_dashboard_cache()
 
@@ -54,7 +53,7 @@ def create_student(data):
 
 
 def invalidate_dashboard_cache():
-    cache.delete(DASHBOARD_CACHE_KEY)
+    SafeCache.delete(DASHBOARD_CACHE_KEY)
 
 
 
@@ -102,7 +101,7 @@ class DashboardService:
     @classmethod
     def get_dashboard_summary(cls):
 
-        cached_data = cache.get(DASHBOARD_CACHE_KEY)
+        cached_data = SafeCache.get(DASHBOARD_CACHE_KEY)
 
         if cached_data is not None:
             return cached_data
@@ -117,7 +116,7 @@ class DashboardService:
             "unpaid_fines": cls.unpaid_fines(),
         }
 
-        cache.set(DASHBOARD_CACHE_KEY, data, DASHBOARD_CACHE_TIMEOUT)
+        SafeCache.set(DASHBOARD_CACHE_KEY, data, DASHBOARD_CACHE_TIMEOUT)
 
         return data
 
@@ -129,14 +128,14 @@ SUPERADMIN_CACHE_TIMEOUT = 60
 
 
 def invalidate_superadmin_cache():
-    cache.delete(SUPERADMIN_CACHE_KEY)
+    SafeCache.delete(SUPERADMIN_CACHE_KEY)
 
 
 class SuperAdminDashboardService:
 
     @classmethod
     def get_dashboard_summary(cls):
-        cached = cache.get(SUPERADMIN_CACHE_KEY)
+        cached = SafeCache.get(SUPERADMIN_CACHE_KEY)
         if cached is not None:
             return cached
 
@@ -152,7 +151,7 @@ class SuperAdminDashboardService:
             'newest_staff_name': (newest.get_full_name() or newest.username) if newest else "—",
         }
 
-        cache.set(SUPERADMIN_CACHE_KEY, data, SUPERADMIN_CACHE_TIMEOUT)
+        SafeCache.set(SUPERADMIN_CACHE_KEY, data, SUPERADMIN_CACHE_TIMEOUT)
         return data
     
 class CourseService:
@@ -164,3 +163,29 @@ class CourseService:
     @staticmethod
     def get_all_courses():
         return Course.objects.all().order_by('-id')
+
+    @staticmethod
+    def get_course(course_id):
+        return Course.objects.get(id=course_id)
+
+    @staticmethod
+    def update_course(course, data):
+
+        for field, value in data.items():
+            setattr(course, field, value)
+
+        course.save()
+
+        return course
+
+    @staticmethod
+    def delete_course(course):
+
+        # optional protection
+        if StudentProfile.objects.filter(course=course).exists():
+            raise ValueError(
+                "Cannot delete course assigned to students."
+            )
+
+        course.delete()
+
