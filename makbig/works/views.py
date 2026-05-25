@@ -7,7 +7,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from adminpanel.models import StudentProfile,Course
 
 # Create your views here.
-from django.core.cache import cache
+from core.cache_utils import SafeCache
 from adminpanel.services import DASHBOARD_CACHE_KEY
 
 
@@ -39,7 +39,7 @@ def submit_work(request, assignment_id):
                 submission.reviewed_at = None
                 submission.save()
 
-                cache.delete(DASHBOARD_CACHE_KEY)
+                SafeCache.delete(DASHBOARD_CACHE_KEY)
 
             else:
                 # 🆕 First submission
@@ -49,7 +49,7 @@ def submit_work(request, assignment_id):
                     screenshot=screenshot
                 )
 
-                cache.delete(DASHBOARD_CACHE_KEY)
+                SafeCache.delete(DASHBOARD_CACHE_KEY)
 
 
         return redirect('student_works')

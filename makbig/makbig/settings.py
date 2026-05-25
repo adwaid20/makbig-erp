@@ -193,7 +193,12 @@ CELERY_ENABLE_UTC = True
 
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
-# LOGIN_URL = '/staff/login/'
+# Rate limiting: fail open if cache (Redis) is unavailable, so users are not
+# blocked with 403 due to infrastructure issues. block=True on views still
+# enforces limits when Redis IS available.
+RATELIMIT_FAIL_OPEN = True
+
+LOGIN_URL = '/staff/login/'
 # LOGIN_REDIRECT_URL = '/staff/dashboard/'
 # LOGOUT_REDIRECT_URL = '/'
 

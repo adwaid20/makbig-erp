@@ -16,6 +16,7 @@ from django.contrib import messages
 
 from django.core.cache import cache
 from adminpanel.services import DASHBOARD_CACHE_KEY
+from core.cache_utils import SafeCache
 
 
 def is_admin_user(user):
@@ -52,7 +53,7 @@ def attendance_session(request):
             AttendanceService.save_attendance(request,students,selected_date)
 
             # invalidate dashboard cache
-            cache.delete(DASHBOARD_CACHE_KEY)
+            SafeCache.delete(DASHBOARD_CACHE_KEY)
 
 
         except ValueError as e:
@@ -85,6 +86,7 @@ def attendance_session(request):
 
 
 
+@login_required(login_url='student_login')
 def student_attendance(request):
     student = get_object_or_404(StudentProfile,user=request.user)
 

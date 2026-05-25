@@ -23,7 +23,7 @@ urlpatterns = [
     path('courses/delete/<int:course_id>/',views.delete_course,name='delete_course'),
     path('students/edit/<int:student_id>/',views.edit_student,name='edit_student'),
 
-    path('superadmin/', views.superadmin_dashboard, name='dashboard'),
+    path('superadmin/', views.superadmin_dashboard, name='superadmin_dashboard'),
     path('superadmin/staff/',views.superadmin_staff_list, name='staff_list'),
     path('superadmin/staff/add/',views.superadmin_add_staff, name='add_staff'),
     path('superadmin/staff/<int:pk>/edit/',views.edit_staff, name='edit_staff'),

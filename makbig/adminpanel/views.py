@@ -34,7 +34,7 @@ User = get_user_model()
 
 
 def is_admin_user(user):
-    return user.is_authenticated and (user.is_staff or user.is_superuser)
+    return user.is_authenticated and user.is_active and (user.is_staff or user.is_superuser)
 
 def is_student_user(user):
     return user.is_authenticated and user.is_student
@@ -405,7 +405,7 @@ def delete_staff(request,pk):
         invalidate_superadmin_cache()
         messages.success(request,f"Staff member {name} permanently delete")
         return redirect('staff_list')
-    return redirect(request,'superadmin/confirm_delete.html',{'staff':staff})
+    return render(request,'superadmin/confirm_delete.html',{'staff':staff})
 
 
 @login_required

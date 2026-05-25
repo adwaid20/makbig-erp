@@ -25,6 +25,7 @@ from .payment_services import PaymentService
 
 from django.core.cache import cache
 from adminpanel.services import DASHBOARD_CACHE_KEY
+from core.cache_utils import SafeCache
 
 
 
@@ -109,7 +110,7 @@ def edit_penalty(request, penalty_id):
         if form.is_valid():
             form.save()
 
-            cache.delete(DASHBOARD_CACHE_KEY)
+            SafeCache.delete(DASHBOARD_CACHE_KEY)
 
             return redirect('student_detail', student_id=penalty.student.id)
     else:
@@ -195,7 +196,8 @@ def initiate_payment(request, penalty_id):
     except ValidationError as e:
         messages.error(request, str(e))
         return redirect('student_review')
-    except Exception:
+    except Exception as e:
+        logger.error("initiate_payment unexpected error for penalty_id=%s: %s", penalty_id, e, exc_info=True)
         messages.error(request, "Could not initiate payment. Please try again later.")
         return redirect('student_review')
 

@@ -298,6 +298,7 @@ def student_review(request):
 
 
 
+@login_required(login_url='student_login')
 def student_review_detail(request,attendance_id):
     if not request.user.is_student:
         messages.error(request,"Access denied")
