@@ -19,13 +19,27 @@ services:
     container_name: makbig-redis
     ports:
       - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   celery:
     build: .
     command: celery -A makbig worker -l info
+    restart: unless-stopped
+    environment:
+      # Override broker/backend to use Docker service name instead of
+      # 127.0.0.1 (which resolves to the container itself inside Docker).
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
     depends_on:
-      - redis
-      - db
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_started
 
 volumes:
-  postgres_data:
+  postgres_data:

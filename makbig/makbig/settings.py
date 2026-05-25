@@ -132,6 +132,8 @@ CACHES = {
         "LOCATION": config("REDIS_URL"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SOCKET_CONNECT_TIMEOUT": 2,
+            "SOCKET_TIMEOUT": 2,
         },
         "KEY_PREFIX": "makbig",
     }
@@ -189,7 +191,14 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Kolkata"   #only used if we have scheduled tasks
 CELERY_ENABLE_UTC = True
 
-# LOGIN_URL = '/staff/login/'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# Rate limiting: fail open if cache (Redis) is unavailable, so users are not
+# blocked with 403 due to infrastructure issues. block=True on views still
+# enforces limits when Redis IS available.
+RATELIMIT_FAIL_OPEN = True
+
+LOGIN_URL = '/staff/login/'
 # LOGIN_REDIRECT_URL = '/staff/dashboard/'
 # LOGOUT_REDIRECT_URL = '/'
 

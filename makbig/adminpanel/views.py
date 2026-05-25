@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required,user_passes_test
 from .models import StudentProfile,Course
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
-from .services import create_student
+from .services import create_student, invalidate_dashboard_cache
 from django.core.paginator import Paginator
 from django.utils.http import urlsafe_base64_encode,urlsafe_base64_decode
 from django.utils.encoding import force_bytes,force_str
@@ -27,14 +27,14 @@ from .forms import StaffLoginForm,StudentLoginForm,AddStudentForm,AddStaffForm,E
 from .decorators import superadmin_required
 
 
-from django.core.cache import cache
+from core.cache_utils import SafeCache
 from adminpanel.services import DASHBOARD_CACHE_KEY
 
 User = get_user_model()
 
 
 def is_admin_user(user):
-    return user.is_authenticated and (user.is_staff or user.is_superuser)
+    return user.is_authenticated and user.is_active and (user.is_staff or user.is_superuser)
 
 def is_student_user(user):
     return user.is_authenticated and user.is_student
@@ -150,7 +150,7 @@ def add_student(request):
             create_student(form.cleaned_data)
 
             # invalidate dashboard cache
-            cache.delete(DASHBOARD_CACHE_KEY)
+            SafeCache.delete(DASHBOARD_CACHE_KEY)
 
             messages.success(request,"Student created and email sent sucessfully.")
 
@@ -405,7 +405,7 @@ def delete_staff(request,pk):
         invalidate_superadmin_cache()
         messages.success(request,f"Staff member {name} permanently delete")
         return redirect('staff_list')
-    return redirect(request,'superadmin/confirm_delete.html',{'staff':staff})
+    return render(request,'superadmin/confirm_delete.html',{'staff':staff})
 
 
 @login_required
@@ -425,3 +425,118 @@ def course_list_create(request):
     courses = CourseService.get_all_courses()
 
     return render(request,'adminpanel/course_list.html',{'form': form,'courses': courses})
+
+
+@login_required
+@user_passes_test(is_admin_user, login_url='staff_login')
+def edit_course(request, course_id):
+
+    course = get_object_or_404(Course, id=course_id)
+
+    form = CourseForm(
+        request.POST or None,
+        instance=course
+    )
+
+    if request.method == "POST" and form.is_valid():
+
+        CourseService.update_course(
+            course,
+            form.cleaned_data
+        )
+
+        messages.success(
+            request,
+            "Course updated successfully."
+        )
+
+        return redirect('course_list')
+
+    return render(
+        request,
+        'adminpanel/edit_course.html',
+        {
+            'form': form,
+            'course': course
+        }
+    )
+
+@require_POST
+@login_required
+@user_passes_test(is_admin_user, login_url='staff_login')
+def delete_course(request, course_id):
+
+    course = get_object_or_404(Course, id=course_id)
+
+    try:
+        CourseService.delete_course(course)
+
+        messages.success(
+            request,
+            "Course deleted successfully."
+        )
+
+    except ValueError as e:
+
+        messages.error(request, str(e))
+
+    return redirect('course_list')
+
+@login_required
+@user_passes_test(is_admin_user)
+def edit_student(request, student_id):
+
+    student = get_object_or_404(
+        StudentProfile.objects.select_related(
+            'user',
+            'course'
+        ),
+        id=student_id
+    )
+
+    if request.method == "POST":
+
+        form = AddStudentForm(request.POST)
+
+        if form.is_valid():
+
+            data = form.cleaned_data
+
+            user = student.user
+
+            user.first_name = data['first_name']
+            user.last_name = data['last_name']
+            user.email = data['email']
+            user.username = data['email']
+
+            user.save()
+
+            student.course = data['course']
+            student.save()
+
+            invalidate_dashboard_cache()
+
+            messages.success(
+                request,
+                "Student updated successfully."
+            )
+
+            return redirect('staff_students')
+
+    else:
+
+        form = AddStudentForm(initial={
+            'first_name': student.user.first_name,
+            'last_name': student.user.last_name,
+            'email': student.user.email,
+            'course': student.course,
+        })
+
+    return render(
+        request,
+        'adminpanel/edit_student.html',
+        {
+            'form': form,
+            'student': student
+        }
+    )

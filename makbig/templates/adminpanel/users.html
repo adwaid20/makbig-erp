@@ -451,6 +451,31 @@
         pointer-events: none;
     }
 
+    .btn-edit {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid #bfdbfe;
+    background: var(--accent-bg);
+    color: var(--accent);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: .72rem;
+    text-decoration: none;
+
+    transition: all .2s;
+}
+
+.btn-edit:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    transform: scale(1.08);
+}
+
     /* Mobile stacking */
     @media (max-width: 767px) {
         .table-head { display: none; }
@@ -611,6 +636,13 @@
                     {% if student.is_active %}Active{% else %}Inactive{% endif %}
                 </span>
             </div>
+            
+            <!-- Edit -->   
+    <a href="{% url 'edit_student' student.id %}"
+       class="btn-edit"
+       title="Edit student">
+        <i class="fa-solid fa-pen"></i>
+    </a>
 
             <!-- Delete -->
             <form method="POST" action="{% url 'delete_student' student.id %}">
